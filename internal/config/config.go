@@ -31,6 +31,7 @@ type DatabaseConfig struct {
 	User     string
 	Password string
 	Name     string
+	SSLmode  string
 }
 
 // JWTConfig holds JWT configuration
@@ -44,18 +45,19 @@ type AdminConfig struct {
 	Username string
 	Password string
 	Email    string
+	UserType string
 }
 
 // EmailConfig holds email configuration
 type EmailConfig struct {
-	VerificationURL  string
-	From             string
-	Host             string
-	Port             int
-	Username         string
-	Password         string
-	Secure           bool
-	VerificationTTL  int
+	VerificationURL string
+	From            string
+	Host            string
+	Port            int
+	Username        string
+	Password        string
+	Secure          bool
+	VerificationTTL int
 }
 
 // ServerConfig holds server configuration
@@ -70,19 +72,19 @@ func LoadConfig() (*Config, error) {
 
 	// Parse DB port
 	dbPort, _ := strconv.Atoi(getEnv("DB_PORT", "5432"))
-	
+
 	// Parse JWT expiry
 	jwtExpiry, _ := time.ParseDuration(getEnv("JWT_EXPIRY", "24h"))
-	
+
 	// Parse email port
 	emailPort, _ := strconv.Atoi(getEnv("EMAIL_PORT", "587"))
-	
+
 	// Parse email secure
 	emailSecure, _ := strconv.ParseBool(getEnv("EMAIL_SECURE", "true"))
-	
+
 	// Parse verification token TTL
 	verificationTTL, _ := strconv.Atoi(getEnv("VERIFICATION_TOKEN_TTL", "5"))
-	
+
 	// Parse server port
 	serverPort, _ := strconv.Atoi(getEnv("SERVER_PORT", "8080"))
 
@@ -97,6 +99,7 @@ func LoadConfig() (*Config, error) {
 			User:     getEnv("DB_USER", "postgres"),
 			Password: getEnv("DB_PASSWORD", "postgres"),
 			Name:     getEnv("DB_NAME", "affpilot_auth"),
+			SSLmode:  getEnv("DB_SSLMODE", "disable"),
 		},
 		JWT: JWTConfig{
 			Secret: getEnv("JWT_SECRET", "your-secret-key-here"),
@@ -106,6 +109,7 @@ func LoadConfig() (*Config, error) {
 			Username: getEnv("SYSTEM_ADMIN_USERNAME", "admin"),
 			Password: getEnv("SYSTEM_ADMIN_PASSWORD", "adminpassword"),
 			Email:    getEnv("SYSTEM_ADMIN_EMAIL", "admin@example.com"),
+			UserType: getEnv("SYSTEM_ADMIN_USER_TYPE", "admin"),
 		},
 		Email: EmailConfig{
 			VerificationURL: getEnv("EMAIL_VERIFICATION_URL", "http://localhost:8080/api/v1/auth/verify"),
