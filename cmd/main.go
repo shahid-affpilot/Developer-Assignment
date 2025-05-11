@@ -45,6 +45,13 @@ func main() {
 	auth.HandleFunc("/resend-verification", handlers.ResendVerification).Methods("POST")
 	auth.HandleFunc("/password-reset", handlers.ResetPassword).Methods("POST")
 
+	// Roles routes
+	roles := api.PathPrefix("/roles").Subrouter()
+	roles.HandleFunc("", handlers.ListRoles).Methods("GET")
+	roles.HandleFunc("/{role_id}", handlers.GetRole).Methods("GET")
+	roles.HandleFunc("", handlers.CreateRole).Methods("POST")
+	roles.HandleFunc("/{role_id}", handlers.DeleteRole).Methods("DELETE")
+
 	log.Println("Server started at :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
