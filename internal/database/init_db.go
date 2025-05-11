@@ -32,9 +32,8 @@ func ConnDB(db_env config.DatabaseConfig) {
 	}
 	fmt.Println("Connected to the database.")
 
-	// sqlFilePath := "/app/migrations/000001_init_schema/up.sql"
-	sqlFilePath := "/home/shahid/Desktop/Developer-Assignment/migrations/000001_init_schema/up.sql"
-	
+	sqlFilePath := "/app/migrations/000001_init_schema/up.sql"
+	//sqlFilePath := "/home/shahid/Desktop/Developer-Assignment/migrations/000001_init_schema/up.sql"
 
 	sqlBytes, err := os.ReadFile(sqlFilePath)
 	if err != nil {
