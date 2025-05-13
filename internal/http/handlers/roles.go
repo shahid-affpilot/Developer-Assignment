@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -23,6 +24,8 @@ func ListRoles(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+
+	fmt.Print(userRole)
 
 	// Verify if user is admin or system_admin
 	if userRole != "admin" && userRole != "system_admin" {

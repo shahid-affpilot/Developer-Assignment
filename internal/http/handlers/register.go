@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -92,6 +93,25 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+
+	var defaultRoleID uuid.UUID
+	err = database.DB.QueryRow(`
+		SELECT id FROM roles WHERE name = 'user' LIMIT 1
+	`).Scan(&defaultRoleID)
+
+	var userRole models.UserRole
+	userRole.UserID = user.ID
+	userRole.AssignedBy = user.ID
+	errr := database.DB.QueryRow(`
+		INSERT INTO user_roles (
+			user_id, role_id, assigned_by
+		)
+		VALUES ($1, $2, $1)
+	`,
+		userRole.UserID, defaultRoleID,
+	)
+
+	fmt.Println("SUIII", errr)
 
 	// Send verification email
 	err = email.SendVerificationEmail(user.Email, user.Username, verificationToken)
