@@ -4,16 +4,18 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
 
 func PermissionDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	userID, err := middleware.GetUserID(r)
+	userRole, err := middleware.GetUserRole(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -21,14 +23,16 @@ func PermissionDetails(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	if userID != "admin" && userID != "system_admin" {
+	if userRole != "admin" && userRole != "system_admin" {
 		json.NewEncoder(w).Encode(map[string]string{
 			"message": "be a admit first",
 		})
 		return
 	}
 
-	var permission Permission
+	var permission models.PermissionDetails
+
+	userID, _ := middleware.GetUserID(r)
 
 	err = database.DB.QueryRow(`
     SELECT
@@ -56,11 +60,19 @@ func PermissionDetails(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// Handle case where no permission found for user
 			fmt.Println("No permission found for this user.")
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(map[string]string{
+				"message": "No permission found for this user",
+			})
+			return
 		} else {
-			// Handle other DB errors
-			fmt.Errorf("error querying permission: %w", err)
+			log.Printf("Error querying permission: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{
+				"message": "Error querying permission",
+				"error":   err.Error(),
+			})
 			return
 		}
 	}

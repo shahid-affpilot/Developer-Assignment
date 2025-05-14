@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 	"golang.org/x/crypto/bcrypt"
@@ -63,10 +64,37 @@ func InitAdminUser(admin config.AdminConfig) {
 			log.Fatal("Hash error:", err)
 		}
 
-		_, err = DB.Exec(`INSERT INTO users (username, email, password_hash, user_type) VALUES ($1, $2, $3, $4)`, admin.Username, admin.Email, string(hashed), admin.UserType)
+		// Insert user and get the user_id
+		var user_id uuid.UUID
+		err = DB.QueryRow(`
+            INSERT INTO users (username, email, password_hash, user_type) 
+            VALUES ($1, $2, $3, $4) 
+            RETURNING id`,
+			admin.Username, admin.Email, string(hashed), admin.UserType).Scan(&user_id)
 
 		if err != nil {
 			log.Fatal("Admin insert failed:", err)
+		}
+
+		// Get role_id for 'user' role
+		var role_id uuid.UUID
+		err = DB.QueryRow(`
+            SELECT id FROM roles 
+            WHERE name = $1`,
+			"user").Scan(&role_id)
+
+		if err != nil {
+			log.Fatal("Failed to get role id:", err)
+		}
+
+		// Assign role to user
+		_, err = DB.Exec(`
+            INSERT INTO user_roles (user_id, role_id, assigned_by) 
+            VALUES ($1, $2, $1)`,
+			user_id, role_id)
+
+		if err != nil {
+			log.Fatal("Failed to assign role to admin:", err)
 		}
 
 		fmt.Println("System admin registered.")

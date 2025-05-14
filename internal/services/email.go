@@ -24,10 +24,8 @@ func LoadEmailConfig() *EmailConfig {
 	}
 }
 
-func SendVerificationEmail(to, username, token string) error {
+func SendVerificationEmail(to, username, URL string) error {
 	config := LoadEmailConfig()
-	verificationURL := fmt.Sprintf("%s?token=%s",
-		os.Getenv("EMAIL_VERIFICATION_URL"), token)
 
 	subject := "Verify Your Email Address"
 	body := fmt.Sprintf(`
@@ -41,7 +39,7 @@ This link will expire in 5 minutes.
 
 Best regards,
 AffPilot Team
-`, username, verificationURL)
+`, username, URL)
 
 	msg := fmt.Sprintf("From: %s\r\n"+
 		"To: %s\r\n"+

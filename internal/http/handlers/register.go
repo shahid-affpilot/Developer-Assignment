@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/services/email"
+	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -102,7 +102,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	var userRole models.UserRole
 	userRole.UserID = user.ID
 	userRole.AssignedBy = user.ID
-	errr := database.DB.QueryRow(`
+	database.DB.QueryRow(`
 		INSERT INTO user_roles (
 			user_id, role_id, assigned_by
 		)
@@ -111,10 +111,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		userRole.UserID, defaultRoleID,
 	)
 
-	fmt.Println("SUIII", errr)
+	verificationURL := fmt.Sprintf("%s?token=%s",
+		os.Getenv("EMAIL_VERIFICATION_URL"), verificationToken)
 
-	// Send verification email
-	err = email.SendVerificationEmail(user.Email, user.Username, verificationToken)
+	err = email.SendVerificationEmail(user.Email, user.Username, verificationURL)
 	if err != nil {
 		log.Printf("Error sending verification email: %v", err)
 	}

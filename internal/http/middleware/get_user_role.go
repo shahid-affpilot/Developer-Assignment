@@ -22,22 +22,27 @@ func GetUserRole(r *http.Request) (string, error) {
 		fmt.Println("11")
 		return "", ErrNoAuthCookie
 	}
+	//fmt.Println("Token string from cookie:", cookie.Value)
 
 	if cookie.Value == "" {
 		fmt.Println("22")
 		return "", ErrNoAuthCookie
 	}
 
+	fmt.Println("Cookie value:", cookie.Value)
+	fmt.Println("JWT_SECRET in middleware:", os.Getenv("JWT_SECRET"))
+	fmt.Println("Before jwt.ParseWithClaims")
+
 	claims := jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			fmt.Println("33")
-			return nil, ErrInvalidToken
-		}
+		fmt.Println("Token method:", token.Method.Alg())
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
+	fmt.Println("Claims after parse:", claims)
+
 	if err != nil {
+		fmt.Println("JWT parse error:", err)
 		fmt.Println("44")
 		return "", ErrInvalidToken
 	}

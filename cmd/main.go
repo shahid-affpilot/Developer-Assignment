@@ -43,7 +43,8 @@ func main() {
 	auth.HandleFunc("/logout", handlers.Logout).Methods("POST")
 	auth.HandleFunc("/verify", handlers.VerifyEmail).Methods("GET")
 	auth.HandleFunc("/resend-verification", handlers.ResendVerification).Methods("POST")
-	auth.HandleFunc("/password-reset", handlers.ResetPassword).Methods("POST")
+	auth.HandleFunc("/password-reset", handlers.InitiatePasswordReset).Methods("POST")
+	auth.HandleFunc("/verify/password-reset", handlers.ConfirmPasswordReset).Methods("GET")
 
 	// Roles routes
 	roles := api.PathPrefix("/roles").Subrouter()
@@ -51,6 +52,18 @@ func main() {
 	roles.HandleFunc("/{role_id}", handlers.GetRole).Methods("GET")
 	roles.HandleFunc("", handlers.CreateRole).Methods("POST")
 	roles.HandleFunc("/{role_id}", handlers.DeleteRole).Methods("DELETE")
+
+	// Permission routes
+	permissions := api.PathPrefix("/permission").Subrouter()
+	permissions.HandleFunc("", handlers.GetPermissionList).Methods("GET")
+	permissions.HandleFunc("/{permission_id}", handlers.PermissionDetails).Methods("GET")
+
+	// User routes
+	user := api.PathPrefix("/me").Subrouter()
+	user.HandleFunc("", handlers.UserInfo).Methods("GET")
+	user.HandleFunc("/permissions", handlers.GetUserPermissions).Methods("GET")
+
+	
 
 	log.Println("Server started at :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

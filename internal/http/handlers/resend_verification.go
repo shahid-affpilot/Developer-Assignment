@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/services/email"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/services"
 )
 
 type ResendVerificationRequest struct {

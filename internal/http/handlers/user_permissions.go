@@ -9,21 +9,14 @@ import (
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
 
-func GetPermissionList(w http.ResponseWriter, r *http.Request) {
+func GetUserPermissions(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	userID, err := middleware.GetUserRole(r)
+	userID, err := middleware.GetUserID(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{
 			"message": "Please login first",
-		})
-		return
-	}
-	if userID != "admin" && userID != "system_admin" {
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Only admin users can view permissions",
 		})
 		return
 	}
@@ -35,7 +28,10 @@ func GetPermissionList(w http.ResponseWriter, r *http.Request) {
             p.name,
             p.description
         FROM permissions p
-        ORDER BY p.name`)
+        INNER JOIN role_permissions rp ON p.id = rp.permission_id
+        INNER JOIN user_roles ur ON rp.role_id = ur.role_id
+        WHERE ur.user_id = $1
+        ORDER BY p.name`, userID)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -56,25 +52,16 @@ func GetPermissionList(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(map[string]string{
-				"message": "Error scanning permissions",
+				"message": "Error processing permissions data",
 			})
 			return
 		}
 		permissions = append(permissions, perm)
 	}
 
-	if err = rows.Err(); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Error iterating permissions",
-		})
-		return
-	}
-
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"status": "success",
-		"count":  len(permissions),
 		"data":   permissions,
 	})
 }

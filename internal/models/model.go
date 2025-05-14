@@ -37,3 +37,25 @@ type User struct {
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`
 }
+
+type UserRole struct {
+	UserID     uuid.UUID `json:"user_id"`
+	RoleID     uuid.UUID `json:"role_id"`
+	AssignedBy uuid.UUID `json:"assigned_by"`
+}
+
+type PermissionShort struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+}
+
+type PermissionDetails struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Resource    string    `json:"resource"`
+	Action      string    `json:"action"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
