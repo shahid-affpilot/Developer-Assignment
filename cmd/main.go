@@ -58,12 +58,15 @@ func main() {
 	permissions.HandleFunc("", handlers.GetPermissionList).Methods("GET")
 	permissions.HandleFunc("/{permission_id}", handlers.PermissionDetails).Methods("GET")
 
-	// User routes
-	user := api.PathPrefix("/me").Subrouter()
-	user.HandleFunc("", handlers.UserInfo).Methods("GET")
-	user.HandleFunc("/permissions", handlers.GetUserPermissions).Methods("GET")
+	// Self-user routes
+	self := api.PathPrefix("/me").Subrouter()
+	self.HandleFunc("", handlers.UserInfo).Methods("GET")
+	self.HandleFunc("/permissions", handlers.GetUserPermissions).Methods("GET")
 
-	
+	// user routes
+	users := api.PathPrefix("/users").Subrouter()
+	users.HandleFunc("", handlers.Users).Methods("GET")
+	users.HandleFunc("/permissions", handlers.GetUserPermissions).Methods("GET")
 
 	log.Println("Server started at :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

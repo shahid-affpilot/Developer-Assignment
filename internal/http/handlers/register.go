@@ -95,7 +95,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var defaultRoleID uuid.UUID
-	err = database.DB.QueryRow(`
+	_ = database.DB.QueryRow(`
 		SELECT id FROM roles WHERE name = 'user' LIMIT 1
 	`).Scan(&defaultRoleID)
 
