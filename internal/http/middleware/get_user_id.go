@@ -25,7 +25,7 @@ func GetUserID(r *http.Request) (string, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
-	fmt.Println("Claims after parse:", claims)
+	//fmt.Println("Claims after parse:", claims)
 
 	if err != nil {
 		return "", ErrInvalidToken

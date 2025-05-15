@@ -106,10 +106,10 @@ func LoadConfig() (*Config, error) {
 			Expiry: jwtExpiry,
 		},
 		Admin: AdminConfig{
-			Username: getEnv("SYSTEM_ADMIN_USERNAME", "admin"),
+			Username: getEnv("SYSTEM_ADMIN_USERNAME", "sys_admin"),
 			Password: getEnv("SYSTEM_ADMIN_PASSWORD", "adminpassword"),
 			Email:    getEnv("SYSTEM_ADMIN_EMAIL", "admin@example.com"),
-			UserType: getEnv("SYSTEM_ADMIN_USER_TYPE", "admin"),
+			UserType: getEnv("SYSTEM_ADMIN_USER_TYPE", "system_admin"),
 		},
 		Email: EmailConfig{
 			VerificationURL: getEnv("EMAIL_VERIFICATION_URL", "http://localhost:8080/api/v1/auth/verify"),

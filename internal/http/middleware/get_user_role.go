@@ -29,9 +29,9 @@ func GetUserRole(r *http.Request) (string, error) {
 		return "", ErrNoAuthCookie
 	}
 
-	fmt.Println("Cookie value:", cookie.Value)
-	fmt.Println("JWT_SECRET in middleware:", os.Getenv("JWT_SECRET"))
-	fmt.Println("Before jwt.ParseWithClaims")
+	//fmt.Println("Cookie value:", cookie.Value)
+	//fmt.Println("JWT_SECRET in middleware:", os.Getenv("JWT_SECRET"))
+	//fmt.Println("Before jwt.ParseWithClaims")
 
 	claims := jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error) {
@@ -39,7 +39,7 @@ func GetUserRole(r *http.Request) (string, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
-	fmt.Println("Claims after parse:", claims)
+	//fmt.Println("Claims after parse:", claims)
 
 	if err != nil {
 		fmt.Println("JWT parse error:", err)

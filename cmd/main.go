@@ -63,10 +63,17 @@ func main() {
 	self.HandleFunc("", handlers.UserInfo).Methods("GET")
 	self.HandleFunc("/permissions", handlers.GetUserPermissions).Methods("GET")
 
-	// user routes
+	// users routes
 	users := api.PathPrefix("/users").Subrouter()
 	users.HandleFunc("", handlers.Users).Methods("GET")
-	users.HandleFunc("/permissions", handlers.GetUserPermissions).Methods("GET")
+	users.HandleFunc("/{user_id}", handlers.UserDetail).Methods("GET")
+	users.HandleFunc("/{user_id}", handlers.UserUpdate).Methods("PUT")
+	users.HandleFunc("/{user_id}/request-deletion", handlers.UserDeletion).Methods("POST")
+	users.HandleFunc("/{user_id}", handlers.UserDelete).Methods("DELETE")
+	users.HandleFunc("/{user_id}/role", handlers.UserRoleChange).Methods("POST")
+	users.HandleFunc("/{user_id}/promote/admin", handlers.PromoteToAdmin).Methods("POST")
+	users.HandleFunc("/{user_id}/promote/moderator", handlers.PromoteToModerator).Methods("POST")
+	users.HandleFunc("/{user_id}/demote", handlers.UserDemote).Methods("POST")
 
 	log.Println("Server started at :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

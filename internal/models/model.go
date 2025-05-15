@@ -59,3 +59,12 @@ type PermissionDetails struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+type UserShortInfo struct {
+	UserName      string `json:"username"`
+	Email         string `json:"email"`
+	FirstName     string `json:"firstname"`
+	LastName      string `json:"lastname"`
+	EmailVerified bool   `json:"email_verified"`
+	Active        bool   `json:"active"`
+}

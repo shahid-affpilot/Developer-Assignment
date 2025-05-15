@@ -81,7 +81,7 @@ func InitAdminUser(admin config.AdminConfig) {
 		err = DB.QueryRow(`
             SELECT id FROM roles 
             WHERE name = $1`,
-			"user").Scan(&role_id)
+			admin.UserType).Scan(&role_id)
 
 		if err != nil {
 			log.Fatal("Failed to get role id:", err)
