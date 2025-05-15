@@ -10,13 +10,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
 
-type RoleRequest struct {
-	RoleName string `json:"role_name"`
-}
-
-func UserRoleChange(w http.ResponseWriter, r *http.Request) {
+func UserDemote(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	userRole, err := middleware.GetUserRole(r)
@@ -46,10 +43,10 @@ func UserRoleChange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var role RoleRequest
+	var role models.RoleRequest
 	json.NewDecoder(r.Body).Decode(&role)
 
-	if role.RoleName == "admin" || role.RoleName == "system_admin" || role.RoleName == "moderator" {
+	if role.RoleName == "admin" || role.RoleName == "system_admin" {
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  strconv.Itoa(http.StatusForbidden),
 			"message": "this is not for promote user!!",
@@ -97,7 +94,6 @@ func UserRoleChange(w http.ResponseWriter, r *http.Request) {
 	var role_id uuid.UUID
 	err = database.DB.QueryRow("SELECT id FROM roles WHERE name = $1", role.RoleName).Scan(&role_id)
 	if err != nil {
-		fmt.Printf("chillErr: %s", err)
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  strconv.Itoa(http.StatusForbidden),
 			"message": "database query problem2",
@@ -153,6 +149,6 @@ func UserRoleChange(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{
 		"status":  strconv.Itoa(http.StatusOK),
-		"message": "user role updated!",
+		"message": "user role demoted!",
 	})
 }

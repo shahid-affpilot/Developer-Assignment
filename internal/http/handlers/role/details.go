@@ -5,21 +5,13 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
-
-type RoleDetails struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
 
 func GetRole(w http.ResponseWriter, r *http.Request) {
 	// Check user role
@@ -48,7 +40,7 @@ func GetRole(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get role details from database
-	var role RoleDetails
+	var role models.RoleDetails
 	err = database.DB.QueryRow(`
         SELECT id, name, description, created_at, updated_at 
         FROM roles 

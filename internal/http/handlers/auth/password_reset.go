@@ -11,24 +11,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type PasswordResetRequest struct {
-	OldPassword string `json:"old_password"`
-	NewPassword string `json:"new_password"`
-}
-
-type InitiateResetRequest struct {
-	Email       string `json:"email"`
-	NewPassword string `json:"new_password"`
-}
-
 func InitiatePasswordReset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var req InitiateResetRequest
+	var req models.InitiateResetRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{

@@ -9,15 +9,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/services"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
 )
 
-type ResendVerificationRequest struct {
-	Email string `json:"email"`
-}
-
 func ResendVerification(w http.ResponseWriter, r *http.Request) {
-	var req ResendVerificationRequest
+	var req models.ResendVerificationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return

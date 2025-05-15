@@ -25,6 +25,7 @@ go.work
 .vscode/
 *.swp
 *.swo
+tmp.md
 
 # OS generated files
 .DS_Store

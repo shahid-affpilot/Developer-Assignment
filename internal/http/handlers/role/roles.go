@@ -6,16 +6,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
-
-type Role struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-}
 
 func ListRoles(w http.ResponseWriter, r *http.Request) {
 	// Check user role
@@ -50,9 +44,9 @@ func ListRoles(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var roles []Role
+	var roles []models.Role
 	for rows.Next() {
-		var role Role
+		var role models.Role
 		if err := rows.Scan(&role.ID, &role.Name, &role.Description); err != nil {
 			log.Printf("Error scanning role: %v", err)
 			continue
