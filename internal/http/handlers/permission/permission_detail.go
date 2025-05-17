@@ -15,26 +15,11 @@ import (
 func PermissionDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	userRole, err := middleware.GetUserRole(r)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Please login first",
-		})
-		return
-	}
-	if userRole != "admin" && userRole != "system_admin" {
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "be a admit first",
-		})
-		return
-	}
-
 	var permission models.PermissionDetails
 
 	userID, _ := middleware.GetUserID(r)
 
-	err = database.DB.QueryRow(`
+	err := database.DB.QueryRow(`
     SELECT
         p.id,
         p.name,

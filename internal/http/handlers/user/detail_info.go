@@ -9,36 +9,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
 
 func UserDetail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	userRole, err := middleware.GetUserRole(r)
-	if err != err {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{
-			"Status":  strconv.Itoa(http.StatusUnauthorized),
-			"message": "Log in first",
-		})
-		return
-	}
 
-	userID, _ := middleware.GetUserID(r)
 	vars := mux.Vars(r)
 	userIdFromParam, err := uuid.Parse(vars["user_id"])
 	if err != nil {
 		http.Error(w, "Invalid User ID", http.StatusBadRequest)
-		return
-	}
-
-	if userRole != "moderator" && userRole != "admin" && userRole != "system_admin" && userID != userIdFromParam.String() {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{
-			"Status":  strconv.Itoa(http.StatusUnauthorized),
-			"message": "Log in as admin",
-		})
 		return
 	}
 

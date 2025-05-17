@@ -5,28 +5,11 @@ import (
 	"net/http"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
 
 func GetPermissionList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
-	userID, err := middleware.GetUserRole(r)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Please login first",
-		})
-		return
-	}
-	if userID != "admin" && userID != "system_admin" {
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Only admin users can view permissions",
-		})
-		return
-	}
 
 	var permissions []models.PermissionShort
 	rows, err := database.DB.Query(`

@@ -12,14 +12,7 @@ import (
 func GetUserPermissions(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	userID, err := middleware.GetUserID(r)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Please login first",
-		})
-		return
-	}
+	userID, _ := r.Context().Value(middleware.UserIDKey).(string)
 
 	var permissions []models.PermissionShort
 	rows, err := database.DB.Query(`

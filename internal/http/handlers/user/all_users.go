@@ -7,30 +7,11 @@ import (
 	"strconv"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
 
 func Users(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	userRole, err := middleware.GetUserRole(r)
-	if err != err {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{
-			"Status":  strconv.Itoa(http.StatusUnauthorized),
-			"message": "Log in first",
-		})
-		return
-	}
-
-	if userRole != "admin" && userRole != "system_admin" {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{
-			"Status":  strconv.Itoa(http.StatusUnauthorized),
-			"message": "Log in as admin",
-		})
-		return
-	}
 
 	rows, err := database.DB.Query(`
 		SELECT username, email, first_name, last_name, email_verified, active

@@ -35,9 +35,8 @@ func main() {
 
 	routes.SetupRoutes(r)
 
-	log.Println("Server started at :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
-
-	log.Println("Server started at :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	// Use the port from config
+	serverAddr := fmt.Sprintf(":%d", cnf.Server.Port)
+	log.Printf("Server started at %s", serverAddr)
+	log.Fatal(http.ListenAndServe(serverAddr, r))
 }

@@ -9,28 +9,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 )
 
 func UserDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
-	userRole, err := middleware.GetUserRole(r)
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusUnauthorized),
-			"message": "log in first",
-		})
-		return
-	}
-
-	if userRole != "moderator" && userRole != "admin" && userRole != "system_admin" {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusUnauthorized),
-			"message": "log in first",
-		})
-		return
-	}
 
 	vars := mux.Vars(r)
 	userIdFromParam, err := uuid.Parse(vars["user_id"])

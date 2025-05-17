@@ -6,28 +6,10 @@ import (
 	"net/http"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
 
 func CreateRole(w http.ResponseWriter, r *http.Request) {
-	// Check user role
-	userRole, err := middleware.GetUserRole(r)
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Verify if user is admin or system_admin
-	if userRole != "admin" && userRole != "system_admin" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Role creation only for admin+ user",
-		})
-		return
-	}
-
 	// Parse request body
 	var req models.CreateRoleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -47,7 +29,7 @@ func CreateRole(w http.ResponseWriter, r *http.Request) {
 
 	// Check if role name already exists
 	var exists bool
-	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM roles WHERE name = $1)", req.Name).Scan(&exists)
+	err := database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM roles WHERE name = $1)", req.Name).Scan(&exists)
 	if err != nil {
 		log.Printf("Database error checking role existence: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)

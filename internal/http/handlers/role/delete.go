@@ -8,27 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 )
 
 func DeleteRole(w http.ResponseWriter, r *http.Request) {
-	// Check user role
-	userRole, err := middleware.GetUserRole(r)
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Verify if user is admin or system_admin
-	if userRole != "admin" && userRole != "system_admin" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Role deletion only for admin+ user",
-		})
-		return
-	}
-
 	// Get role ID from URL params
 	vars := mux.Vars(r)
 	roleID, err := uuid.Parse(vars["role_id"])

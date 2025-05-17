@@ -7,17 +7,6 @@ import (
 )
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	// Check for auth cookie
-	cookie, err := r.Cookie("auth_token")
-	if err != nil || cookie.Value == "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "No user is logged in",
-		})
-		return
-	}
-
 	// Clear the auth cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "auth_token",

@@ -2,35 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 )
 
 func ListRoles(w http.ResponseWriter, r *http.Request) {
-	// Check user role
-	userRole, err := middleware.GetUserRole(r)
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	fmt.Print(userRole)
-
-	// Verify if user is admin or system_admin
-	if userRole != "admin" && userRole != "system_admin" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Role checking only for admin+ user",
-		})
-		return
-	}
-
 	// Get all roles from database
 	rows, err := database.DB.Query(`
         SELECT id, name, description 

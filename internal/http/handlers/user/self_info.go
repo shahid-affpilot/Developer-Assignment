@@ -12,19 +12,11 @@ import (
 func UserInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get user ID from context (set by auth middleware)
-	userID, err := middleware.GetUserID(r)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Please login first",
-		})
-		return
-	}
+	userID, _ := r.Context().Value(middleware.UserIDKey).(string)
 
 	// Get user information from database
 	var user models.UserResponse
-	err = database.DB.QueryRow(`
+	err := database.DB.QueryRow(`
         SELECT id, first_name, last_name, email, user_type, email_verified, created_at, updated_at
         FROM users
         WHERE id = $1`,

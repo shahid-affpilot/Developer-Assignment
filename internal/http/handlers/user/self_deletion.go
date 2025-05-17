@@ -14,14 +14,7 @@ import (
 func UserDeletion(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	userID, err := middleware.GetUserID(r)
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusUnauthorized),
-			"message": "log in first",
-		})
-		return
-	}
+	userID, _ := r.Context().Value(middleware.UserIDKey).(string)
 
 	vars := mux.Vars(r)
 	userIdFromParam, err := uuid.Parse(vars["user_id"])
