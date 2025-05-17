@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
@@ -63,5 +64,9 @@ func CreateRole(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(role)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  strconv.Itoa(http.StatusCreated),
+		"message": "role creation susscessful",
+		"data":    role,
+	})
 }

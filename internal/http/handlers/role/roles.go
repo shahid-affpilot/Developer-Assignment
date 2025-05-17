@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
@@ -41,7 +42,8 @@ func ListRoles(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"roles": roles,
-		"count": len(roles),
+		"status": strconv.Itoa(http.StatusAccepted),
+		"message": "list of roles",
+		"data": roles,
 	})
 }

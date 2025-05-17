@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
@@ -56,8 +57,8 @@ func GetPermissionList(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status": "success",
-		"count":  len(permissions),
-		"data":   permissions,
+		"status":  strconv.Itoa(http.StatusOK),
+		"message": "permission details",
+		"data":    permissions,
 	})
 }

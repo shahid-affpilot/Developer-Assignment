@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -74,6 +75,7 @@ func InitiatePasswordReset(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{
+		"status":  strconv.Itoa(http.StatusOK),
 		"message": "Password reset verification email sent",
 	})
 }
@@ -157,6 +159,7 @@ func ConfirmPasswordReset(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{
+		"status":  strconv.Itoa(http.StatusOK),
 		"message": "Password has been reset successfully",
 	})
 }
