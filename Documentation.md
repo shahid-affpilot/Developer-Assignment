@@ -5,7 +5,75 @@
 ### Overview
 AffPilot Auth Service is a robust authentication and authorization system built in Go that provides secure user management, role-based access control, and email verification functionality.
 
-### Database Architecture
+## Getting Started
+
+### Prerequisites
+
+1. **Docker Installation**
+   - Install Docker Engine
+   - Install Docker Compose
+
+### Clone and Run
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/shahid-affpilot/Developer-Assignment.git
+   cd Developer-Assignment
+   ```
+
+2. **Configure Environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env file with your configuration
+   ```
+
+3. **Build and Start Services**
+   ```bash
+   docker compose up --build // from linux os
+   docker-compose up --build // from linux windows
+   ```
+
+4. **Verify Installation**
+   Using curl:
+   ```bash
+   curl http://localhost:8080/register
+   ```
+   Or using Postman (recommended):
+   - Import collection from Postman section
+   - Execute "Health Check" request
+
+
+    Import the complete API collection using this link:
+    ```
+    https://affpilot-2941.postman.co/workspace/Affpilot-Workspace~2220a0d0-ef3f-410d-84c5-1fd95022775b/collection/44639385-0a9112f5-2843-4de4-ad95-2e094fcb129e
+    ```
+    The collection includes all API endpoints with example requests and environment variables.
+
+### Environment Setup
+
+1. **Configuration**
+   ```env
+   # Create .env file with required variables
+   DB_HOST=postgres
+   DB_PORT=5432
+   DB_USER=youruser
+   DB_PASSWORD=yourpassword
+   DB_NAME=affpilot
+   JWT_SECRET=your-secret-key
+   SMTP_HOST=smtp.example.com
+   SMTP_PORT=587
+   SMTP_USER=your-email
+   SMTP_PASSWORD=your-password
+   ```
+
+#### Initialization Process
+The system automatically handles:
+- Loading environment variables
+- Establishing database connection
+- Creating initial system admin account
+- Setting up required permissions
+
+
+## Database Architecture
 The system uses PostgreSQL with the following table structure:
 
 1. **Users Table**
@@ -29,7 +97,7 @@ The system uses PostgreSQL with the following table structure:
    - Maps roles to permissions
    - Columns: id, role_id, permission_id, timestamp
 
-### Role-Based Access Control
+## Role-Based Access Control
 
 The system implements a hierarchical permission structure:
 
@@ -59,14 +127,6 @@ The system implements a hierarchical permission structure:
    - Email verification
    - Password reset
 
-### Technology Stack
-
-| Component    | Technology                           |
-|--------------|--------------------------------------|
-| Language     | Go (Golang)                          |
-| Database     | PostgreSQL                           |
-| Security     | JWT, bcrypt                          |
-| Deployment   | Docker                               |
 
 ## Project Structure
 
@@ -100,67 +160,8 @@ The service implements multiple security layers:
    - Bcrypt hashing
    - Secure reset mechanism
 
-## Getting Started
 
-### Prerequisites
-
-1. **Docker Installation**
-   - Install Docker Engine
-   - Install Docker Compose
-
-### Environment Setup
-
-1. **Configuration**
-   ```env
-   # Create .env file with required variables
-   DB_HOST=postgres
-   DB_PORT=5432
-   DB_USER=youruser
-   DB_PASSWORD=yourpassword
-   DB_NAME=affpilot
-   JWT_SECRET=your-secret-key
-   SMTP_HOST=smtp.example.com
-   SMTP_PORT=587
-   SMTP_USER=your-email
-   SMTP_PASSWORD=your-password
-   ```
-
-#### Clone and Run
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/shahid-affpilot/Developer-Assignment/
-   cd Developer-Assignment
-   ```
-
-2. **Configure Environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env file with your configuration
-   ```
-
-3. **Build and Start Services**
-   ```bash
-   docker-compose up --build
-   ```
-
-4. **Verify Installation**
-   Using curl:
-   ```bash
-   curl http://localhost:8080/
-   ```
-   Or using Postman (recommended):
-   - Import collection from Postman section
-   - Execute "Health Check" request
-
-#### Initialization Process
-The system automatically handles:
-- Loading environment variables
-- Establishing database connection
-- Creating initial system admin account
-- Setting up required permissions
-
-
-### Project Initialization
+## Project Initialization
 
 The application's entry point is `cmd/main.go`, which handles the following initialization sequence:
 
@@ -190,27 +191,6 @@ The application's entry point is `cmd/main.go`, which handles the following init
    }
    ```
 
-#### Clone and Run the project
-
-The initialization process ensures:
-- Environment variables are properly loaded
-- Database connection is established
-- System admin account exists with required permissions
-
-1. **Clone this github repo**
-    ```bash
-    git clone https://github.com/shahid-affpilot/Developer-Assignment/
-    ```
-2. **Build and Start**
-   ```bash
-   docker-compose up --build
-   ```
-
-3. **Verify Installation**
-   ```bash
-   curl http://localhost:8080/
-   ```
-   or you can user postman (recommonded), postman collection given in another section.
 
 ## API Documentation
 
@@ -331,13 +311,6 @@ The project contains 24 API endpoints grouped into 4 categories: /auth, /users, 
   - Derived from assigned roles
 
 
-## API Testing with Postman
-
-Import the complete API collection using this link:
-```
-https://affpilot-2941.postman.co/workspace/Affpilot-Workspace~2220a0d0-ef3f-410d-84c5-1fd95022775b/collection/44639385-0a9112f5-2843-4de4-ad95-2e094fcb129e
-```
-The collection includes all API endpoints with example requests and environment variables.
 
 ## Troubleshooting
 
@@ -404,3 +377,11 @@ The collection includes all API endpoints with example requests and environment 
      docker network inspect affpilot_network
      ```
 
+## Technology Stack
+
+| Component    | Technology                           |
+|--------------|--------------------------------------|
+| Language     | Go (Golang)                          |
+| Database     | PostgreSQL                           |
+| Security     | JWT, bcrypt                          |
+| Deployment   | Docker                               |
