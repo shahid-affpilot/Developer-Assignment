@@ -18,6 +18,7 @@ AffPilot Auth Service is a robust authentication and authorization system built 
    ```bash
    git clone https://github.com/shahid-affpilot/Developer-Assignment.git
    cd Developer-Assignment
+   go mod tidy
    ```
 
 2. **Configure Environment**
@@ -42,7 +43,7 @@ AffPilot Auth Service is a robust authentication and authorization system built 
    - Execute "Health Check" request
 
 
-    Import the complete API collection using this link:
+    Import the complete API collection by import `Auth System.postman_collection.json` (in my root directory) into postman application. Or you can get the collection using this link:
     ```
     https://affpilot-2941.postman.co/workspace/Affpilot-Workspace~2220a0d0-ef3f-410d-84c5-1fd95022775b/collection/44639385-0a9112f5-2843-4de4-ad95-2e094fcb129e
     ```
@@ -319,6 +320,7 @@ The project contains 24 API endpoints grouped into 4 categories: /auth, /users, 
 1. **Check for Active PostgreSQL Processes**
    ```bash
    sudo lsof -i :5432
+   sudo lsof -i :8080
    ```
    This command shows:
    - Process ID (PID)

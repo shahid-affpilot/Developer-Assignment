@@ -1,0 +1,316 @@
+{
+	"info": {
+		"_postman_id": "5a8c2d1b-ddd2-4f94-8a2c-678a9defa823",
+		"name": "Auth Syestem (Dev Assign)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "44639385",
+		"_collection_link": "https://speeding-moon-973069.postman.co/workspace/My-Workspace~2220a0d0-ef3f-410d-84c5-1fd95022775b/collection/44639385-5a8c2d1b-ddd2-4f94-8a2c-678a9defa823?action=share&source=collection_link&creator=44639385"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "verify",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/auth/verify?token=70230a38-dba5-4104-aa5a-17a32e7ba49b",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"verify"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "70230a38-dba5-4104-aa5a-17a32e7ba49b"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/v1/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "resend-verification",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"tasfia.toisi@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/v1/auth/resend-verification"
+					},
+					"response": []
+				},
+				{
+					"name": "logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "http://localhost:8080/api/v1/auth/logout"
+					},
+					"response": []
+				},
+				{
+					"name": "password-reset",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"old_password\": \"chill\",\n    \"new_password\": \"peranai,chill\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/v1/auth/password-reset"
+					},
+					"response": []
+				},
+				{
+					"name": "register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"tasfia.toisi@gmail.com\",\n    \"password\": \"chill\",\n    \"username\": \"toisi\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/v1/auth/register"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Roles",
+			"item": [
+				{
+					"name": "roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/v1/roles"
+					},
+					"response": []
+				},
+				{
+					"name": "role-details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/v1/roles/500690e4-8ac3-402c-92eb-086177700ad4"
+					},
+					"response": []
+				},
+				{
+					"name": "role-creation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"new_role\",\n    \"description\": \"Description for the new role\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/v1/roles"
+					},
+					"response": []
+				},
+				{
+					"name": "role-deletion",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "permission",
+			"item": [
+				{
+					"name": "permission",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/v1/permission"
+					},
+					"response": []
+				},
+				{
+					"name": "permission-details",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "me",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "my_permissions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/v1/me/permissions"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "user_detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/v1/users/b8e8fba7-7999-492a-ac23-00d21e4e8f96"
+					},
+					"response": []
+				},
+				{
+					"name": "user_update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"grazier2025\",\n  \"email\": \"grazier@example.com\",\n  \"first_name\": \"Grazier\",\n  \"last_name\": \"Ahmed\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/v1/users/19825af8-223b-4766-b139-485a6dfefb00"
+					},
+					"response": []
+				},
+				{
+					"name": "user_acc_del_req",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "user_acc_del",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "user_role_change",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role_name\": \"moderator\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/v1/users/b8e8fba7-7999-492a-ac23-00d21e4e8f96/role"
+					},
+					"response": []
+				},
+				{
+					"name": "user_promote_admin",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "user_demote",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": \"user\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/v1/users/759e0f0b-f839-4ec1-b632-4e74dba1fedf/demote"
+					},
+					"response": []
+				},
+				{
+					"name": "user_list",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
