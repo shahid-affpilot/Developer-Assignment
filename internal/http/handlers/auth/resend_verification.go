@@ -3,12 +3,14 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
@@ -81,7 +83,9 @@ func ResendVerification(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send new verification email
-	err = email.SendVerificationEmail(req.Email, user.Username, verificationToken)
+	verificationURL := fmt.Sprintf("%s?token=%s", config.EMAIL_VERIFICATION_URL, verificationToken)
+
+	err = email.SendVerificationEmail(req.Email, user.Username, verificationURL)
 	if err != nil {
 		log.Printf("Error sending verification email: %v", err)
 		http.Error(w, "Error sending verification email", http.StatusInternalServerError)

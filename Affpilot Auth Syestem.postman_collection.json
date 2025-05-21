@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "5a8c2d1b-ddd2-4f94-8a2c-678a9defa823",
-		"name": "Auth Syestem (Dev Assign)",
+		"_postman_id": "0a9112f5-2843-4de4-ad95-2e094fcb129e",
+		"name": "Affpilot Auth Syestem (Dev Assign)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "44639385",
-		"_collection_link": "https://speeding-moon-973069.postman.co/workspace/My-Workspace~2220a0d0-ef3f-410d-84c5-1fd95022775b/collection/44639385-5a8c2d1b-ddd2-4f94-8a2c-678a9defa823?action=share&source=collection_link&creator=44639385"
+		"_collection_link": "https://affpilot-2941.postman.co/workspace/Affpilot-Workspace~2220a0d0-ef3f-410d-84c5-1fd95022775b/collection/44639385-0a9112f5-2843-4de4-ad95-2e094fcb129e?action=share&source=collection_link&creator=44639385"
 	},
 	"item": [
 		{
@@ -16,22 +16,17 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/auth/verify?token=70230a38-dba5-4104-aa5a-17a32e7ba49b",
-							"protocol": "http",
+							"raw": "{{affpilot}}auth/verify?token=b866b7a5-4cc8-44ea-9785-518de996cb7f",
 							"host": [
-								"localhost"
+								"{{affpilot}}auth"
 							],
-							"port": "8080",
 							"path": [
-								"api",
-								"v1",
-								"auth",
 								"verify"
 							],
 							"query": [
 								{
 									"key": "token",
-									"value": "70230a38-dba5-4104-aa5a-17a32e7ba49b"
+									"value": "b866b7a5-4cc8-44ea-9785-518de996cb7f"
 								}
 							]
 						}
@@ -55,7 +50,7 @@
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/v1/auth/login"
+						"url": "{{affpilot}}auth/login"
 					},
 					"response": []
 				},
@@ -73,7 +68,7 @@
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/v1/auth/resend-verification"
+						"url": "{{affpilot}}auth/resend-verification"
 					},
 					"response": []
 				},
@@ -82,7 +77,7 @@
 					"request": {
 						"method": "POST",
 						"header": [],
-						"url": "http://localhost:8080/api/v1/auth/logout"
+						"url": "{{affpilot}}auth/logout"
 					},
 					"response": []
 				},
@@ -93,14 +88,14 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"old_password\": \"chill\",\n    \"new_password\": \"peranai,chill\"\n}",
+							"raw": "{\n    \"email\": \"tasfia.toisi@gmail.com\",\n    \"new_password\": \"peranai,chill\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/v1/auth/password-reset"
+						"url": "{{affpilot}}auth/password-reset"
 					},
 					"response": []
 				},
@@ -132,7 +127,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/v1/roles"
+						"url": "{{affpilot}}roles"
 					},
 					"response": []
 				},
@@ -141,7 +136,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/v1/roles/500690e4-8ac3-402c-92eb-086177700ad4"
+						"url": "{{affpilot}}roles/7b35feda-aff3-4826-abe0-1eeeeed0065f"
 					},
 					"response": []
 				},
@@ -152,22 +147,23 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"new_role\",\n    \"description\": \"Description for the new role\"\n}",
+							"raw": "{\n    \"name\": \"ghuest\",\n    \"description\": \"just like user\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/v1/roles"
+						"url": "{{affpilot}}roles"
 					},
 					"response": []
 				},
 				{
 					"name": "role-deletion",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "DELETE",
+						"header": [],
+						"url": "{{affpilot}}roles/65a41842-f554-4880-aae2-35e6b89953f5"
 					},
 					"response": []
 				}
@@ -181,7 +177,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/v1/permission"
+						"url": "{{affpilot}}permission"
 					},
 					"response": []
 				},
@@ -189,7 +185,8 @@
 					"name": "permission-details",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": "{{affpilot}}permission/45fa620f-1f41-4ece-a3ca-4185e7d699e9"
 					},
 					"response": []
 				},
@@ -197,7 +194,8 @@
 					"name": "me",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": "{{affpilot}}me"
 					},
 					"response": []
 				},
@@ -206,7 +204,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/v1/me/permissions"
+						"url": "{{affpilot}}me/permissions"
 					},
 					"response": []
 				}
@@ -220,7 +218,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/v1/users/b8e8fba7-7999-492a-ac23-00d21e4e8f96"
+						"url": "{{affpilot}}users/b8e8fba7-7999-492a-ac23-00d21e4e8f96"
 					},
 					"response": []
 				},
@@ -238,23 +236,25 @@
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/v1/users/19825af8-223b-4766-b139-485a6dfefb00"
+						"url": "{{affpilot}}users/dc2c6d4e-dea8-4d19-b11f-58235c472cb3"
 					},
 					"response": []
 				},
 				{
 					"name": "user_acc_del_req",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "POST",
+						"header": [],
+						"url": "{{affpilot}}users/4a91abfd-2630-4bef-99b5-c1686c2a737a/request-deletion"
 					},
 					"response": []
 				},
 				{
 					"name": "user_acc_del",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "DELETE",
+						"header": [],
+						"url": "{{affpilot}}users/dc2c6d4e-dea8-4d19-b11f-58235c472cb3"
 					},
 					"response": []
 				},
@@ -265,22 +265,32 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"role_name\": \"moderator\"\n}",
+							"raw": "{\n    \"role_name\": \"guest\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/v1/users/b8e8fba7-7999-492a-ac23-00d21e4e8f96/role"
+						"url": "{{affpilot}}users/b8e8fba7-7999-492a-ac23-00d21e4e8f96/role"
 					},
 					"response": []
 				},
 				{
 					"name": "user_promote_admin",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{affpilot}}users/b8e8fba7-7999-492a-ac23-00d21e4e8f96/promote/admin"
 					},
 					"response": []
 				},
@@ -291,26 +301,46 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": \"user\"\n}",
+							"raw": "{\n    \"role_name\": \"user\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/v1/users/759e0f0b-f839-4ec1-b632-4e74dba1fedf/demote"
+						"url": "{{affpilot}}users/dc2c6d4e-dea8-4d19-b11f-58235c472cb3/demote"
 					},
 					"response": []
 				},
 				{
 					"name": "user_list",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role_name\": \"user\"\n}"
+						},
+						"url": "{{affpilot}}users"
 					},
 					"response": []
 				}
 			]
+		}
+	],
+	"variable": [
+		{
+			"key": "machine",
+			"value": "http://localhost:8080/",
+			"type": "default"
+		},
+		{
+			"key": "affpilot",
+			"value": "http://localhost:8080/api/v1/",
+			"type": "default"
 		}
 	]
 }

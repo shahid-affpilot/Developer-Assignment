@@ -50,7 +50,7 @@ func GetRole(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"status":  strconv.Itoa(http.StatusAccepted),
-		"message": "user details",
+		"message": "role details",
 		"data":    role,
 	})
 }

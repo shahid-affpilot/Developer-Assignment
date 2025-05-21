@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
@@ -34,6 +35,7 @@ func InitiatePasswordReset(w http.ResponseWriter, r *http.Request) {
 	encodedPass := base64.URLEncoding.EncodeToString([]byte(req.NewPassword))
 	token := randomToken + "." + encodedPass
 	expiry := time.Now().Add(15 * time.Minute)
+	fmt.Println(token)
 
 	// Update user with reset token
 	result, err := database.DB.Exec(`
@@ -59,9 +61,7 @@ func InitiatePasswordReset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	verificationURL := fmt.Sprintf("%s/password-reset?token=%s",
-		os.Getenv("EMAIL_VERIFICATION_URL"), token)
-
+	verificationURL := fmt.Sprintf("%s/password-reset?token=%s", config.EMAIL_VERIFICATION_URL, token)
 	// Send verification email
 	err = email.SendVerificationEmail(req.Email, "Password Reset", verificationURL)
 

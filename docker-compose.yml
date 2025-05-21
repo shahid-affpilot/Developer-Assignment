@@ -11,14 +11,14 @@ services:
     env_file:
       - .env
     environment:
-      - DB_HOST=postgres  # override .env DB_HOST=localhost
+      - "${DB_HOST}"
     volumes:
       - ./migrations:/app/migrations
 
   postgres:
     image: postgres:14-alpine
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:${DB_PORT}"
     env_file:
       - .env
     environment:

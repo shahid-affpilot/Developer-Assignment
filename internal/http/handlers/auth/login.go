@@ -99,8 +99,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":  strconv.Itoa(http.StatusAccepted),
-		"message": "User logged-in success",
-		"data":    response,
+		"status":    strconv.Itoa(http.StatusAccepted),
+		"message":   "User logged-in success",
+		"user_type": string(response.UserType),
+		"data":      response,
 	})
 }

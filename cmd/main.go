@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/routes"
@@ -35,8 +36,14 @@ func main() {
 
 	routes.SetupRoutes(r)
 
-	// Use the port from config
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"}, // Frontend origin (Vite default port)
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}).Handler(r) // <- use the router here
+
 	serverAddr := fmt.Sprintf(":%d", cnf.Server.Port)
 	log.Printf("Server started at %s", serverAddr)
-	log.Fatal(http.ListenAndServe(serverAddr, r))
+	log.Fatal(http.ListenAndServe(serverAddr, corsHandler)) // <- used corsHandler instead of r
 }

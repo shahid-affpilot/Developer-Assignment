@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -65,6 +66,9 @@ type ServerConfig struct {
 	Port int
 }
 
+var EMAIL_VERIFICATION_URL string
+var serverPort int
+
 // LoadConfig loads configuration from environment variables
 func LoadConfig() (*Config, error) {
 	// Load .env file if it exists
@@ -74,7 +78,7 @@ func LoadConfig() (*Config, error) {
 	dbPort, _ := strconv.Atoi(getEnv("DB_PORT", "5432"))
 
 	// Parse JWT expiry
-	jwtExpiry, _ := time.ParseDuration(getEnv("JWT_EXPIRY", "24h"))
+	jwtExpiry, _ := time.ParseDuration(getEnv("JWT_EXPIRY", "24"))
 
 	// Parse email port
 	emailPort, _ := strconv.Atoi(getEnv("EMAIL_PORT", "587"))
@@ -86,7 +90,9 @@ func LoadConfig() (*Config, error) {
 	verificationTTL, _ := strconv.Atoi(getEnv("VERIFICATION_TOKEN_TTL", "5"))
 
 	// Parse server port
-	serverPort, _ := strconv.Atoi(getEnv("SERVER_PORT", "8080"))
+	serverPort, _ = strconv.Atoi(getEnv("SERVER_PORT", "8080"))
+
+	EMAIL_VERIFICATION_URL = fmt.Sprintf("%s:%s/api/v1/auth/verify", os.Getenv("SERVER_DOMAIN"), os.Getenv("SERVER_PORT"))
 
 	return &Config{
 		App: AppConfig{
@@ -112,7 +118,7 @@ func LoadConfig() (*Config, error) {
 			UserType: getEnv("SYSTEM_ADMIN_USER_TYPE", "system_admin"),
 		},
 		Email: EmailConfig{
-			VerificationURL: getEnv("EMAIL_VERIFICATION_URL", "http://localhost:8080/api/v1/auth/verify"),
+			VerificationURL: EMAIL_VERIFICATION_URL,
 			From:            getEnv("EMAIL_FROM", "no-reply@example.com"),
 			Host:            getEnv("EMAIL_HOST", "smtp.example.com"),
 			Port:            emailPort,
