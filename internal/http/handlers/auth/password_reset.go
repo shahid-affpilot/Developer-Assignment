@@ -18,6 +18,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var Cnf = config.GetConfig()
+
 func InitiatePasswordReset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -61,7 +63,7 @@ func InitiatePasswordReset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	verificationURL := fmt.Sprintf("%s/password-reset?token=%s", config.EMAIL_VERIFICATION_URL, token)
+	verificationURL := fmt.Sprintf("%s/password-reset?token=%s", Cnf.Email.VerificationURL, token)
 	// Send verification email
 	err = email.SendVerificationEmail(req.Email, "Password Reset", verificationURL)
 

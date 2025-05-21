@@ -2,11 +2,18 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/joho/godotenv"
+)
+
+var (
+	cfg  *Config
+	once sync.Once
 )
 
 // Config holds all configuration for the application
@@ -66,7 +73,6 @@ type ServerConfig struct {
 	Port int
 }
 
-var EMAIL_VERIFICATION_URL string
 var serverPort int
 
 // LoadConfig loads configuration from environment variables
@@ -92,7 +98,7 @@ func LoadConfig() (*Config, error) {
 	// Parse server port
 	serverPort, _ = strconv.Atoi(getEnv("SERVER_PORT", "8080"))
 
-	EMAIL_VERIFICATION_URL = fmt.Sprintf("%s:%s/api/v1/auth/verify", os.Getenv("SERVER_DOMAIN"), os.Getenv("SERVER_PORT"))
+	EMAIL_VERIFICATION_URL := fmt.Sprintf("%s:%s/api/v1/auth/verify", os.Getenv("SERVER_DOMAIN"), os.Getenv("SERVER_PORT"))
 
 	return &Config{
 		App: AppConfig{
@@ -140,4 +146,16 @@ func getEnv(key, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+func GetConfig() *Config {
+	once.Do(func() {
+		var err error
+		cfg, err = LoadConfig()
+		log.Print(cfg)
+		if err != nil {
+			log.Fatalf("failed to load config: %v", err)
+		}
+	})
+	return cfg
 }

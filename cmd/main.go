@@ -16,7 +16,7 @@ var cnf *config.Config
 
 func init() {
 	var err error
-	cnf, err = config.LoadConfig() // get .env variables
+	cnf = config.GetConfig()
 	if err != nil {
 		log.Println("Config func does not working well")
 	}

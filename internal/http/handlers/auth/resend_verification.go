@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
@@ -83,7 +82,7 @@ func ResendVerification(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send new verification email
-	verificationURL := fmt.Sprintf("%s?token=%s", config.EMAIL_VERIFICATION_URL, verificationToken)
+	verificationURL := fmt.Sprintf("%s?token=%s", Cnf.Email.VerificationURL, verificationToken)
 
 	err = email.SendVerificationEmail(req.Email, user.Username, verificationURL)
 	if err != nil {
