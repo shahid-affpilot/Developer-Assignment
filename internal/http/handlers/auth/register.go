@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
@@ -27,6 +28,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	// Basic validation
 	if req.Username == "" || req.Email == "" || req.Password == "" {
 		http.Error(w, "Missing required fields", http.StatusBadRequest)
+		return
+	}
+
+	if len(req.Password) < 8 || len(req.Password) > 20 {
+		http.Error(w, "Password should be in between 8 - 20 character", http.StatusBadRequest)
 		return
 	}
 
@@ -65,8 +71,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate verification token
+	cnf := config.GetConfig()
+	TTL := cnf.Email.VerificationTTL
 	verificationToken := uuid.New().String()
-	tokenExpiry := time.Now().Add(5 * time.Minute)
+	tokenExpiry := time.Now().Add(time.Duration(TTL) * time.Minute)
 
 	// Create user (insert into database)
 	var user models.User
@@ -114,10 +122,12 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	verificationURL := fmt.Sprintf("%s?token=%s", Cnf.Email.VerificationURL, verificationToken)
 
-	err = email.SendVerificationEmail(user.Email, user.Username, verificationURL)
-	if err != nil {
-		log.Printf("Error sending verification email: %v", err)
-	}
+	go func() {
+		err = email.SendVerificationEmail(user.Email, user.Username, verificationURL)
+		if err != nil {
+			log.Printf("Error sending verification email: %v", err)
+		}
+	}()
 
 	response := models.RegisterResponse{
 		ID:       user.ID,

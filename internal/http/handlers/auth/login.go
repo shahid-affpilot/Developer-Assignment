@@ -32,10 +32,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// Get user from database
 	var user models.User
 	err := database.DB.QueryRow(`
-        SELECT id, email, password_hash, email_verified, user_type
+        SELECT id, email, password_hash, email_verified, user_type, active
         FROM users
         WHERE email = $1
-    `, req.Email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.EmailVerified, &user.UserType)
+    `, req.Email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.EmailVerified, &user.UserType, &user.Active)
 
 	if err == sql.ErrNoRows {
 		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
@@ -44,6 +44,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Database error: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if !user.Active {
+		http.Error(w, "Account is deactivated", http.StatusForbidden)
 		return
 	}
 
