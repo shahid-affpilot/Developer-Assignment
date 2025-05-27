@@ -57,7 +57,8 @@ func InitAdminUser(admin config.AdminConfig) {
 		log.Fatal("DB check failed:", err)
 	}
 
-	salt_pass := os.Getenv("PASSWORD_SALT")
+	cnf := config.GetConfig()
+	salt_pass := cnf.PassSalt.Pass
 	if !exists {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(admin.Password+salt_pass), bcrypt.DefaultCost)
 		if err != nil {

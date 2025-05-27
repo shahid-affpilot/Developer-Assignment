@@ -83,6 +83,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	
 	// Set JWT token in HTTP-only cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "auth_token",

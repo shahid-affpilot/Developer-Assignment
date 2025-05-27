@@ -48,6 +48,7 @@ func UserUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)", update_info.Username).Scan(&exists)
+	// TODO username keep same as before
 
 	if err != nil {
 		log.Printf("Database error checking username existence: %v", err)

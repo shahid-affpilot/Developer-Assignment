@@ -46,4 +46,6 @@ func main() {
 	serverAddr := fmt.Sprintf(":%d", cnf.Server.Port)
 	log.Printf("Server started at %s", serverAddr)
 	log.Fatal(http.ListenAndServe(serverAddr, corsHandler)) // <- used corsHandler instead of r
+
+	defer database.DB.Close()
 }

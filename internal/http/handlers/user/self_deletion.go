@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -27,6 +28,8 @@ func UserDeletion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println("pera!!!")
+
 	if userID != userIdFromParam.String() {
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  strconv.Itoa(http.StatusUnauthorized),
@@ -34,6 +37,8 @@ func UserDeletion(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	fmt.Println("pera 2!!!")
 
 	err = database.DB.QueryRow(`
 		UPDATE users
@@ -53,6 +58,8 @@ func UserDeletion(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	fmt.Println("pera 3!!!")
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{

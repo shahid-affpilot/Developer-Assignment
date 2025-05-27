@@ -10,8 +10,44 @@ import (
 
 func RegisterRoleRoutes(router *mux.Router) {
 	roles := router.PathPrefix("/api/v1/roles").Subrouter()
-	roles.Handle("", middleware.AuthMiddleware(middleware.RequireRole("admin", "system_admin")(http.HandlerFunc(handlers.ListRoles)))).Methods("GET")
-	roles.Handle("/{role_id}", middleware.AuthMiddleware(middleware.RequireRole("admin", "system_admin")(http.HandlerFunc(handlers.GetRole)))).Methods("GET")
-	roles.Handle("", middleware.AuthMiddleware(middleware.RequireRole("admin", "system_admin")(http.HandlerFunc(handlers.CreateRole)))).Methods("POST")
-	roles.Handle("/{role_id}", middleware.AuthMiddleware(middleware.RequireRole("admin", "system_admin")(http.HandlerFunc(handlers.DeleteRole)))).Methods("DELETE")
+
+	roles.Handle("",
+		middleware.AuthMiddleware(
+			middleware.RequireRole("admin", "system_admin")(
+				http.HandlerFunc(handlers.ListRoles),
+			),
+		),
+	).Methods("GET")
+
+	roles.Handle("/{role_id}",
+		middleware.AuthMiddleware(
+			middleware.RequireRole("admin", "system_admin")(
+				http.HandlerFunc(handlers.GetRole),
+			),
+		),
+	).Methods("GET")
+
+	roles.Handle("",
+		middleware.AuthMiddleware(
+			middleware.RequireRole("admin", "system_admin")(
+				http.HandlerFunc(handlers.CreateRole),
+			),
+		),
+	).Methods("POST")
+
+	roles.Handle("/{role_id}",
+		middleware.AuthMiddleware(
+			middleware.RequireRole("admin", "system_admin")(
+				http.HandlerFunc(handlers.UpdateRole),
+			),
+		),
+	).Methods("PUT")
+
+	roles.Handle("/{role_id}",
+		middleware.AuthMiddleware(
+			middleware.RequireRole("admin", "system_admin")(
+				http.HandlerFunc(handlers.DeleteRole),
+			),
+		),
+	).Methods("DELETE")
 }

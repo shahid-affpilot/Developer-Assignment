@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -24,6 +23,7 @@ type Config struct {
 	Admin    AdminConfig
 	Email    EmailConfig
 	Server   ServerConfig
+	PassSalt PasswordSalt
 }
 
 // AppConfig holds application-specific configuration
@@ -45,7 +45,7 @@ type DatabaseConfig struct {
 // JWTConfig holds JWT configuration
 type JWTConfig struct {
 	Secret string
-	Expiry time.Duration
+	Expiry string
 }
 
 // AdminConfig holds system admin information
@@ -73,6 +73,10 @@ type ServerConfig struct {
 	Port int
 }
 
+type PasswordSalt struct {
+	Pass string
+}
+
 var serverPort int
 
 // LoadConfig loads configuration from environment variables
@@ -84,7 +88,7 @@ func LoadConfig() (*Config, error) {
 	dbPort, _ := strconv.Atoi(getEnv("DB_PORT", "5432"))
 
 	// Parse JWT expiry
-	jwtExpiry, _ := time.ParseDuration(getEnv("JWT_EXPIRY", "24"))
+	jwtExpiry := getEnv("JWT_EXPIRY", "24")
 
 	// Parse email port
 	emailPort, _ := strconv.Atoi(getEnv("EMAIL_PORT", "587"))
@@ -135,6 +139,9 @@ func LoadConfig() (*Config, error) {
 		},
 		Server: ServerConfig{
 			Port: serverPort,
+		},
+		PassSalt: PasswordSalt{
+			Pass: getEnv("PASSWORD_SALT", ""),
 		},
 	}, nil
 }

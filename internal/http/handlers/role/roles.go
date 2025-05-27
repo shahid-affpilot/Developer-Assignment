@@ -42,8 +42,8 @@ func ListRoles(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status": strconv.Itoa(http.StatusAccepted),
+		"status":  strconv.Itoa(http.StatusAccepted),
 		"message": "list of roles",
-		"data": roles,
+		"data":    roles,
 	})
 }

@@ -1,11 +1,14 @@
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func RequireRole(allowedRoles ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			role, ok := r.Context().Value(UserRoleKey).(string)
+
 			if !ok {
 				http.Error(w, "Unauthorized - No role found", http.StatusUnauthorized)
 				return

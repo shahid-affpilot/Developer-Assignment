@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -64,8 +63,12 @@ func InitiatePasswordReset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	verificationURL := fmt.Sprintf("%s/password-reset?token=%s", Cnf.Email.VerificationURL, token)
-	// Send verification email
-	err = email.SendVerificationEmail(req.Email, "Password Reset", verificationURL)
+	mailText := fmt.Sprintf(
+		"Hello dear, here's your new email verification link as requested:\n\n%s\n\nThank you,\nAffpilot AI Team",
+		verificationURL,
+	)
+
+	err = email.SendVerificationEmail(req.Email, "Reset your Affpilot Password", mailText)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -133,7 +136,8 @@ func ConfirmPasswordReset(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Print(newPassword)
 
-	salt_pass := []byte(os.Getenv("PASSWORD_SALT"))
+	cnf := config.GetConfig()
+	salt_pass := []byte(cnf.PassSalt.Pass)
 	pass := append(newPassword, salt_pass...)
 
 	hashedPassword, err := bcrypt.GenerateFromPassword(pass, bcrypt.DefaultCost)

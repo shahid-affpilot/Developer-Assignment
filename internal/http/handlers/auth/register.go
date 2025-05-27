@@ -7,10 +7,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/google/uuid"
-	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
@@ -19,24 +17,22 @@ import (
 
 func Register(w http.ResponseWriter, r *http.Request) {
 	var req models.RegisterRequest
-
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	// Basic validation
 	if req.Username == "" || req.Email == "" || req.Password == "" {
 		http.Error(w, "Missing required fields", http.StatusBadRequest)
 		return
 	}
 
 	if len(req.Password) < 8 || len(req.Password) > 20 {
-		http.Error(w, "Password should be in between 8 - 20 character", http.StatusBadRequest)
+		http.Error(w, "Password should be between 8 - 20 characters", http.StatusBadRequest)
 		return
 	}
 
-	// Check if username already exists
+	// checking if username already exists
 	var exists bool
 	err := database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username=$1)", req.Username).Scan(&exists)
 	if err != nil {
@@ -49,7 +45,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if email already exists
+	// checking if email already exists
 	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email=$1)", req.Email).Scan(&exists)
 	if err != nil {
 		log.Printf("Database error checking email: %v", err)
@@ -61,75 +57,53 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Hash password
-	salt_pass := os.Getenv("PASSWORD_SALT")
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password+salt_pass), bcrypt.DefaultCost)
+	// hashing password
+	salt := os.Getenv("PASSWORD_SALT")
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password+salt), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Error hashing password: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	// Generate verification token
-	cnf := config.GetConfig()
-	TTL := cnf.Email.VerificationTTL
-	verificationToken := uuid.New().String()
-	tokenExpiry := time.Now().Add(time.Duration(TTL) * time.Minute)
-
-	// Create user (insert into database)
 	var user models.User
 	err = database.DB.QueryRow(`
-        INSERT INTO users (
-            username, email, password_hash, first_name, last_name,
-            email_verified, user_type, verification_token, token_expiry
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING id, username, email, created_at
-    `,
-		req.Username,
-		req.Email,
-		string(hashedPassword),
-		req.FirstName,
-		req.LastName,
-		false,  // email_verified
-		"user", // user_type
-		verificationToken,
-		tokenExpiry,
-	).Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt)
+		INSERT INTO users (username, email, password_hash, first_name, last_name, email_verified, user_type)
+		VALUES ($1, $2, $3, $4, $5, false, 'user')
+		RETURNING id, username, email, created_at
+	`, req.Username, req.Email, string(hashedPassword), req.FirstName, req.LastName).
+		Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt)
 
 	if err != nil {
-		log.Printf("Error creating user: %v", err)
+		log.Printf("Error inserting user: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	var defaultRoleID uuid.UUID
-	_ = database.DB.QueryRow(`
-		SELECT id FROM roles WHERE name = 'user' LIMIT 1
-	`).Scan(&defaultRoleID)
+	_ = database.DB.QueryRow(`SELECT id FROM roles WHERE name = 'user' LIMIT 1`).Scan(&defaultRoleID)
 
-	var userRole models.UserRole
-	userRole.UserID = user.ID
-	userRole.AssignedBy = user.ID
-	database.DB.QueryRow(`
-		INSERT INTO user_roles (
-			user_id, role_id, assigned_by
-		)
-		VALUES ($1, $2, $1)
-	`,
-		userRole.UserID, defaultRoleID,
+	_, _ = database.DB.Exec(`INSERT INTO user_roles (user_id, role_id, assigned_by) VALUES ($1, $2, $1)`,
+		user.ID, defaultRoleID)
+
+	// Send Email
+	verificationURL, _ := email.GenerateVerificationURL(user.ID)
+
+	mailText := fmt.Sprintf(
+		"Hello %s, you're registered successfully! Please verify your email using the link below:\n\n%s\n\nThank you,\nAffpilot AI Team",
+		user.Username,
+		verificationURL,
 	)
 
-	verificationURL := fmt.Sprintf("%s?token=%s", Cnf.Email.VerificationURL, verificationToken)
+	err = email.SendVerificationEmail(user.Email, user.Username, mailText)
+	if err != nil {
+		log.Printf("Error sending verification email: %v", err)
+		http.Error(w, "Error sending verification email.", http.StatusBadRequest)
+		return
+	}
 
-	go func() {
-		err = email.SendVerificationEmail(user.Email, user.Username, verificationURL)
-		if err != nil {
-			log.Printf("Error sending verification email: %v", err)
-		}
-	}()
-
-	response := models.RegisterResponse{
+	// return response
+	resp := models.RegisterResponse{
 		ID:       user.ID,
 		Username: user.Username,
 		Email:    user.Email,
@@ -141,6 +115,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"status":  strconv.Itoa(http.StatusCreated),
 		"message": "User registration successful",
-		"data":    response,
+		"data":    resp,
 	})
 }

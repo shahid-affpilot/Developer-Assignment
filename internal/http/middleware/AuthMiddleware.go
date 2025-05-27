@@ -3,9 +3,9 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"os"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 )
 
 type contextKey string
@@ -23,9 +23,10 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		cnf := config.GetConfig()
 		claims := jwt.MapClaims{}
 		token, err := jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("JWT_SECRET")), nil
+			return []byte(cnf.JWT.Secret), nil
 		})
 
 		if err != nil || !token.Valid {

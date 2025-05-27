@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 )
 
 var (
@@ -29,14 +29,12 @@ func GetUserRole(r *http.Request) (string, error) {
 		return "", ErrNoAuthCookie
 	}
 
-	//fmt.Println("Cookie value:", cookie.Value)
-	//fmt.Println("JWT_SECRET in middleware:", os.Getenv("JWT_SECRET"))
-	//fmt.Println("Before jwt.ParseWithClaims")
+	cnf := config.GetConfig()
 
 	claims := jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error) {
 		fmt.Println("Token method:", token.Method.Alg())
-		return []byte(os.Getenv("JWT_SECRET")), nil
+		return []byte(cnf.JWT.Secret), nil
 	})
 
 	//fmt.Println("Claims after parse:", claims)
