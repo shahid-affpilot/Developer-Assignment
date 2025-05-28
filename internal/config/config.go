@@ -102,7 +102,11 @@ func LoadConfig() (*Config, error) {
 	// Parse server port
 	serverPort, _ = strconv.Atoi(getEnv("SERVER_PORT", "8080"))
 
-	EMAIL_VERIFICATION_URL := fmt.Sprintf("%s:%s/api/v1/auth/verify", os.Getenv("SERVER_DOMAIN"), os.Getenv("SERVER_PORT"))
+	// backend
+	// EMAIL_VERIFICATION_URL := fmt.Sprintf("%s:%s/api/v1/auth/verify", os.Getenv("SERVER_DOMAIN"), os.Getenv("SERVER_PORT"))
+	// localhost:8080/api/v1/auth/verify?token=''
+	//frontend
+	EMAIL_VERIFICATION_URL := fmt.Sprintf("%s:%s/verify", os.Getenv("BASE_URL_FRONTEND"), os.Getenv("BASE_PORT_FRONTEND"))
 
 	return &Config{
 		App: AppConfig{
@@ -122,7 +126,7 @@ func LoadConfig() (*Config, error) {
 			Expiry: jwtExpiry,
 		},
 		Admin: AdminConfig{
-			Username: getEnv("SYSTEM_ADMIN_USERNAME", "sys_admin"),
+			Username: getEnv("SYSTEM_ADMIN_USERNAME", "system_admin"),
 			Password: getEnv("SYSTEM_ADMIN_PASSWORD", "adminpassword"),
 			Email:    getEnv("SYSTEM_ADMIN_EMAIL", "admin@example.com"),
 			UserType: getEnv("SYSTEM_ADMIN_USER_TYPE", "system_admin"),

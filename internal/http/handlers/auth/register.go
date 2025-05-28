@@ -66,6 +66,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// insert into 'users' table
 	var user models.User
 	err = database.DB.QueryRow(`
 		INSERT INTO users (username, email, password_hash, first_name, last_name, email_verified, user_type)
@@ -80,6 +81,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// insert into 'user-roles' table -- (user & role relationship)
 	var defaultRoleID uuid.UUID
 	_ = database.DB.QueryRow(`SELECT id FROM roles WHERE name = 'user' LIMIT 1`).Scan(&defaultRoleID)
 
@@ -90,7 +92,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	verificationURL, _ := email.GenerateVerificationURL(user.ID)
 
 	mailText := fmt.Sprintf(
-		"Hello %s, you're registered successfully! Please verify your email using the link below:\n\n%s\n\nThank you,\nAffpilot AI Team",
+		"Hello %s,\nYou're registered successfully! Please verify your email using the link below:\n\n%s\n\nThank you,\nAffpilot AI Team",
 		user.Username,
 		verificationURL,
 	)
