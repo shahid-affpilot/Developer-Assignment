@@ -1,15 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func PromoteToAdmin(w http.ResponseWriter, r *http.Request) {
@@ -18,39 +16,26 @@ func PromoteToAdmin(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userIdFromParam, err := uuid.Parse(vars["user_id"])
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "User ID in param is invalid",
-		})
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid user id")
 		return
 	}
 
 	var exists bool
 	err = database.DB.QueryRow("SELECT exists(SELECT 1 FROM users WHERE id=$1)", userIdFromParam).Scan(&exists)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "database query problem1",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if !exists {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "there are no user with this ID",
-		})
+		utils.ErrorResponse(w, http.StatusNoContent, "there are no user with this id")
 		return
 	}
 
 	var role_id uuid.UUID
 	err = database.DB.QueryRow("SELECT id FROM roles WHERE name = $1", "admin").Scan(&role_id)
 	if err != nil {
-		fmt.Printf("chillErr: %s", err)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "database query problem2",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error (db)")
 		return
 	}
 
@@ -63,11 +48,7 @@ func PromoteToAdmin(w http.ResponseWriter, r *http.Request) {
 		userIdFromParam,
 	)
 	if err != nil {
-		fmt.Printf("chillErr: %s", err)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "database query problem3",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
@@ -84,16 +65,9 @@ func PromoteToAdmin(w http.ResponseWriter, r *http.Request) {
 		userIdFromParam,
 	)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "database query problem4",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
-		"status":  strconv.Itoa(http.StatusOK),
-		"message": "promoted to admin!",
-	})
+	utils.SuccessResponse(w, http.StatusOK, "promoted to admin", nil)
 }

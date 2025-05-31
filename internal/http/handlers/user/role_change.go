@@ -2,15 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func UserRoleChange(w http.ResponseWriter, r *http.Request) {
@@ -19,10 +18,7 @@ func UserRoleChange(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userIdFromParam, err := uuid.Parse(vars["user_id"])
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "User ID in param is invalid",
-		})
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid user id")
 		return
 	}
 
@@ -30,28 +26,19 @@ func UserRoleChange(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&role)
 
 	if role.RoleName == "admin" || role.RoleName == "system_admin" || role.RoleName == "moderator" {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "this is not for promote user!!",
-		})
+		utils.ErrorResponse(w, http.StatusNotAcceptable, "this is not for promote")
 		return
 	}
 
 	var exists bool
 	err = database.DB.QueryRow("SELECT exists(SELECT 1 FROM users WHERE id=$1)", userIdFromParam).Scan(&exists)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "database query problem1",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if !exists {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "there are no user with this ID",
-		})
+		utils.ErrorResponse(w, http.StatusForbidden, "there are no user with this id")
 		return
 	}
 
@@ -59,37 +46,24 @@ func UserRoleChange(w http.ResponseWriter, r *http.Request) {
 
 	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM roles WHERE name = $1)", role.RoleName).Scan(&roleExists)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusInternalServerError),
-			"message": "Error checking role existence",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
 	if !roleExists {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusNotFound),
-			"message": "Role does not exist",
-		})
+		utils.ErrorResponse(w, http.StatusNotFound, "role does not exists")
 		return
 	}
 
 	var role_id uuid.UUID
 	err = database.DB.QueryRow("SELECT id FROM roles WHERE name = $1", role.RoleName).Scan(&role_id)
 	if err != nil {
-		fmt.Printf("chillErr: %s", err)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "database query problem2",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if !exists {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "there are no role in roles table",
-		})
+		utils.ErrorResponse(w, http.StatusNoContent, "there are no role in roles table")
 		return
 	}
 
@@ -102,11 +76,7 @@ func UserRoleChange(w http.ResponseWriter, r *http.Request) {
 		userIdFromParam,
 	)
 	if err != nil {
-		fmt.Printf("chillErr: %s", err)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "database query problem3",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
@@ -123,16 +93,9 @@ func UserRoleChange(w http.ResponseWriter, r *http.Request) {
 		userIdFromParam,
 	)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "database query problem4",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
-		"status":  strconv.Itoa(http.StatusOK),
-		"message": "user role updated!",
-	})
+	utils.SuccessResponse(w, http.StatusOK, "user role updated", nil)
 }

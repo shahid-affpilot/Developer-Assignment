@@ -10,6 +10,7 @@ import (
 
 func RegisterAuthRoutes(router *mux.Router) {
 	auth := router.PathPrefix("/api/v1/auth").Subrouter()
+	
 	auth.HandleFunc("/register", handlers.Register).Methods("POST")
 	auth.HandleFunc("/login", handlers.Login).Methods("POST")
 
@@ -28,5 +29,5 @@ func RegisterAuthRoutes(router *mux.Router) {
 	).Methods("POST")
 
 	auth.HandleFunc("/password-reset", handlers.InitiatePasswordReset).Methods("POST")
-	auth.HandleFunc("/verify/password-reset", handlers.ConfirmPasswordReset).Methods("GET")
+	auth.HandleFunc("/verify/password-reset", handlers.ConfirmPasswordReset).Methods("POST")
 }

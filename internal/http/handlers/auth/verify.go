@@ -1,23 +1,22 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	tokenStr := r.URL.Query().Get("token")
 	if tokenStr == "" {
-		http.Error(w, "Verification token is required", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "token is missing in URL")
 		return
 	}
 
@@ -33,13 +32,14 @@ func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil || !parsedToken.Valid {
 		log.Printf("Invalid token: %v", err)
-		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid token")
 		return
 	}
 
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok {
-		http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+
+		utils.ErrorResponse(w, http.StatusUnauthorized, "invalid token claims")
 		return
 	}
 
@@ -48,13 +48,13 @@ func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	expiry := int64(expiryFloat)
 
 	if time.Now().Unix() > expiry {
-		http.Error(w, "Token has expired", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "token has been expired")
 		return
 	}
 
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		http.Error(w, "Invalid user_id format", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "Failed to parsed user id")
 		return
 	}
 
@@ -68,14 +68,9 @@ func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Error updating verification status: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Internal server error, failed to update user")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
-		"status":  strconv.Itoa(http.StatusOK),
-		"message": "Verification successful",
-	})
+	utils.SuccessResponse(w, http.StatusOK, "user is now verified", nil)
 }

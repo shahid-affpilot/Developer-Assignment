@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func UserInfo(w http.ResponseWriter, r *http.Request) {
@@ -36,14 +36,9 @@ func UserInfo(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(err)
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Error fetching user information",
-			"err":     err.Error(),
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	utils.SuccessResponse(w, http.StatusOK, "Profile info", user)
 }

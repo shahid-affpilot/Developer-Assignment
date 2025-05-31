@@ -2,15 +2,12 @@ package handlers
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func PermissionDetails(w http.ResponseWriter, r *http.Request) {
@@ -46,29 +43,13 @@ func PermissionDetails(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			fmt.Println("No permission found for this user.")
-			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(map[string]string{
-				"message": "No permission found for this user",
-			})
+			utils.ErrorResponse(w, http.StatusNoContent, "No permission for this user")
 			return
 		} else {
-			log.Printf("Error querying permission: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{
-				"message": "Error querying permission",
-				"error":   err.Error(),
-			})
+			utils.ErrorResponse(w, http.StatusInternalServerError, "Internal server error")
 			return
 		}
 	}
 
-	fmt.Printf("permission list: %+v", permission)
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":  strconv.Itoa(http.StatusOK),
-		"message": "List of permissions",
-		"data":    permission,
-	})
+	utils.SuccessResponse(w, http.StatusOK, "List of permissions", permission)
 }

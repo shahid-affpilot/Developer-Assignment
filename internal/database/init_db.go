@@ -68,10 +68,10 @@ func InitAdminUser(admin config.AdminConfig) {
 		// Insert user and get the user_id
 		var user_id uuid.UUID
 		err = DB.QueryRow(`
-            INSERT INTO users (username, email, password_hash, user_type) 
-            VALUES ($1, $2, $3, $4) 
+            INSERT INTO users (username, email, first_name, last_name, email_verified, verification_token, token_expiry, password_hash, user_type) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING id`,
-			admin.Username, admin.Email, string(hashed), admin.UserType).Scan(&user_id)
+			admin.Username, admin.Email, "Mr", "Admin", true, "", nil, string(hashed), admin.UserType).Scan(&user_id)
 
 		if err != nil {
 			log.Fatal("Admin insert failed:", err)

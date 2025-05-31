@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func DeleteRole(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +15,7 @@ func DeleteRole(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	roleID, err := uuid.Parse(vars["role_id"])
 	if err != nil {
-		http.Error(w, "Invalid role ID", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid role id")
 		return
 	}
 
@@ -30,16 +29,12 @@ func DeleteRole(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Database error checking role: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if isSystemRole {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Cannot delete system roles",
-		})
+		utils.ErrorResponse(w, http.StatusBadRequest, "system role are default, cant be deleted")
 		return
 	}
 
@@ -47,7 +42,7 @@ func DeleteRole(w http.ResponseWriter, r *http.Request) {
 	result, err := database.DB.Exec("DELETE FROM roles WHERE id = $1", roleID)
 	if err != nil {
 		log.Printf("Error deleting role: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
@@ -55,23 +50,14 @@ func DeleteRole(w http.ResponseWriter, r *http.Request) {
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		log.Printf("Error getting rows affected: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if rowsAffected == 0 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Role not found",
-		})
+		utils.ErrorResponse(w, http.StatusNoContent, "role not found")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
-		"status":  strconv.Itoa(http.StatusOK),
-		"message": "Role deleted successfully",
-	})
+	utils.SuccessResponse(w, http.StatusOK, "Role deleted", nil)
 }

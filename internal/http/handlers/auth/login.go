@@ -12,6 +12,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,13 +20,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var req models.LoginRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid Reqeust Body")
 		return
 	}
 
 	// Basic validation
 	if req.Email == "" || req.Password == "" {
-		http.Error(w, "Email and password are required", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusNoContent, "Email and password are required")
 		return
 	}
 
@@ -38,17 +39,17 @@ func Login(w http.ResponseWriter, r *http.Request) {
     `, req.Email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.EmailVerified, &user.UserType, &user.Active)
 
 	if err == sql.ErrNoRows {
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid email or password")
 		return
 	}
 	if err != nil {
 		log.Printf("Database error: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
 	if !user.Active {
-		http.Error(w, "Account is deactivated", http.StatusForbidden)
+		utils.ErrorResponse(w, http.StatusForbidden, "Account is deactivated")
 		return
 	}
 
@@ -62,7 +63,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	salt_pass := os.Getenv("PASSWORD_SALT")
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password+salt_pass))
 	if err != nil {
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		utils.ErrorResponse(w, http.StatusBadRequest, "email or password invalid")
 		return
 	}
 
@@ -79,11 +80,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		log.Printf("Error generating token: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
-	
 	// Set JWT token in HTTP-only cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "auth_token",
@@ -102,12 +102,5 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		ExpiresIn: 24 * 60 * 60, // 24 hours in seconds
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":    strconv.Itoa(http.StatusAccepted),
-		"message":   "User logged-in success",
-		"user_type": string(response.UserType),
-		"data":      response,
-	})
+	utils.SuccessResponse(w, http.StatusAccepted, "User loging success", response)
 }

@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func GetUserPermissions(w http.ResponseWriter, r *http.Request) {
@@ -27,10 +27,7 @@ func GetUserPermissions(w http.ResponseWriter, r *http.Request) {
         ORDER BY p.name`, userID)
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Failed to fetch permissions",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 	defer rows.Close()
@@ -43,18 +40,11 @@ func GetUserPermissions(w http.ResponseWriter, r *http.Request) {
 			&perm.Description,
 		)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{
-				"message": "Error processing permissions data",
-			})
+			utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 			return
 		}
 		permissions = append(permissions, perm)
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status": "success",
-		"data":   permissions,
-	})
+	utils.SuccessResponse(w, http.StatusOK, "success", permissions)
 }

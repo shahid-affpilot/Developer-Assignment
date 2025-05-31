@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
 	"time"
+
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func Logout(w http.ResponseWriter, r *http.Request) {
@@ -20,10 +20,5 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 	})
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
-		"status":  strconv.Itoa(http.StatusOK),
-		"message": "Successfully logged out",
-	})
+	utils.SuccessResponse(w, http.StatusOK, "user logged out success", nil)
 }

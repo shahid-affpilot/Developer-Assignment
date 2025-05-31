@@ -2,14 +2,13 @@ package handlers
 
 import (
 	"database/sql"
-	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func UserDetail(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +17,7 @@ func UserDetail(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userIdFromParam, err := uuid.Parse(vars["user_id"])
 	if err != nil {
-		http.Error(w, "Invalid User ID", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid user id")
 		return
 	}
 
@@ -31,20 +30,9 @@ func UserDetail(w http.ResponseWriter, r *http.Request) {
 	).Scan(&user.Username, &user.Email, &user.FirstName, &user.LastName, &user.EmailVerified, &user.Active, &user.UserType)
 
 	if err == sql.ErrNoRows {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusNotFound),
-			"message": "User not found",
-		})
+		utils.ErrorResponse(w, http.StatusNotFound, "user not found")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status": strconv.Itoa(http.StatusAccepted),
-		"message": "User Detail Info",
-		"data":   user,
-	})
+	utils.SuccessResponse(w, http.StatusOK, "user details", user)
 }

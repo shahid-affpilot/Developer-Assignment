@@ -1,15 +1,14 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/http/middleware"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func UserDeletion(w http.ResponseWriter, r *http.Request) {
@@ -21,20 +20,14 @@ func UserDeletion(w http.ResponseWriter, r *http.Request) {
 	userIdFromParam, err := uuid.Parse(vars["user_id"])
 
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusUnauthorized),
-			"message": "param is invalid",
-		})
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid user id")
 		return
 	}
 
 	fmt.Println("pera!!!")
 
 	if userID != userIdFromParam.String() {
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusUnauthorized),
-			"message": "You can not delete other user",
-		})
+		utils.ErrorResponse(w, http.StatusUnauthorized, "you cannot delete other user")
 		return
 	}
 
@@ -51,19 +44,11 @@ func UserDeletion(w http.ResponseWriter, r *http.Request) {
 	).Scan(&userID)
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusInternalServerError),
-			"message": "Failed to update user",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	fmt.Println("pera 3!!!")
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
-		"status":  strconv.Itoa(http.StatusOK),
-		"message": "User deletion requested successfully",
-	})
+	utils.SuccessResponse(w, http.StatusOK, "deletion request submitted", nil)
 }

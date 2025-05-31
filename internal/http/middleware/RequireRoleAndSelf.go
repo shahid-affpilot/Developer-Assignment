@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func RequireRoleOrSelf(allowedRoles ...string) func(http.Handler) http.Handler {
@@ -22,7 +23,7 @@ func RequireRoleOrSelf(allowedRoles ...string) func(http.Handler) http.Handler {
 
 			role, ok := r.Context().Value(UserRoleKey).(string)
 			if !ok {
-				http.Error(w, "Unauthorized - No role found", http.StatusUnauthorized)
+				utils.ErrorResponse(w, http.StatusUnauthorized, "no token found")
 				return
 			}
 
@@ -33,7 +34,7 @@ func RequireRoleOrSelf(allowedRoles ...string) func(http.Handler) http.Handler {
 				}
 			}
 
-			http.Error(w, "Forbidden - Insufficient permissions", http.StatusForbidden)
+			utils.ErrorResponse(w, http.StatusUnauthorized, "Permission denied")
 		})
 	}
 }

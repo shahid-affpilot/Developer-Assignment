@@ -70,8 +70,11 @@ type UserShortInfo struct {
 }
 
 type InitiateResetRequest struct {
-	Email       string `json:"email"`
-	NewPassword string `json:"new_password"`
+	Email string `json:"email"`
+}
+
+type Password struct {
+	Password string `json:"password"`
 }
 
 type ResendVerificationRequest struct {

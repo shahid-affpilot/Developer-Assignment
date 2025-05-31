@@ -6,29 +6,29 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
 	var req models.RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	if req.Username == "" || req.Email == "" || req.Password == "" {
-		http.Error(w, "Missing required fields", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusNoContent, "Missing required fields")
 		return
 	}
 
 	if len(req.Password) < 8 || len(req.Password) > 20 {
-		http.Error(w, "Password should be between 8 - 20 characters", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "Password should be in between 8-20 character")
 		return
 	}
 
@@ -37,11 +37,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	err := database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username=$1)", req.Username).Scan(&exists)
 	if err != nil {
 		log.Printf("Database error checking username: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Database error in checking username")
 		return
 	}
 	if exists {
-		http.Error(w, "Username already taken", http.StatusConflict)
+		utils.ErrorResponse(w, http.StatusConflict, "Username already exists")
 		return
 	}
 
@@ -49,11 +49,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email=$1)", req.Email).Scan(&exists)
 	if err != nil {
 		log.Printf("Database error checking email: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Database error checking email")
 		return
 	}
 	if exists {
-		http.Error(w, "Email already registered", http.StatusConflict)
+		utils.ErrorResponse(w, http.StatusConflict, "Email already registered!")
 		return
 	}
 
@@ -62,7 +62,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password+salt), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Error hashing password: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusForbidden, "Error to hashing pasword")
 		return
 	}
 
@@ -77,7 +77,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Error inserting user: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Database error in inserting user")
 		return
 	}
 
@@ -100,7 +100,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	err = email.SendVerificationEmail(user.Email, user.Username, mailText)
 	if err != nil {
 		log.Printf("Error sending verification email: %v", err)
-		http.Error(w, "Error sending verification email.", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Error sending email")
 		return
 	}
 
@@ -109,14 +109,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		ID:       user.ID,
 		Username: user.Username,
 		Email:    user.Email,
-		Message:  "Registration successful. Please check your email to verify your account.",
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":  strconv.Itoa(http.StatusCreated),
-		"message": "User registration successful",
-		"data":    resp,
-	})
+	utils.SuccessResponse(w, http.StatusCreated, "User registration successful", resp)
 }

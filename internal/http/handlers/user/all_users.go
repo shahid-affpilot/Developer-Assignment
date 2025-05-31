@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func Users(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +18,7 @@ func Users(w http.ResponseWriter, r *http.Request) {
 	`)
 	if err != nil {
 		log.Printf("Database error: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 	defer rows.Close()
@@ -36,14 +35,9 @@ func Users(w http.ResponseWriter, r *http.Request) {
 
 	if err = rows.Err(); err != nil {
 		log.Printf("Error iterating roles: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":  strconv.Itoa(http.StatusAccepted),
-		"message": "all users list",
-		"data":    userlist,
-	})
+	utils.SuccessResponse(w, http.StatusOK, "all user list", userlist)
 }

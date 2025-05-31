@@ -2,15 +2,14 @@ package handlers
 
 import (
 	"database/sql"
-	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func GetRole(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +17,7 @@ func GetRole(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	roleID, err := uuid.Parse(vars["role_id"])
 	if err != nil {
-		http.Error(w, "Invalid role ID", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid role id")
 		return
 	}
 
@@ -32,25 +31,15 @@ func GetRole(w http.ResponseWriter, r *http.Request) {
 	).Scan(&role.ID, &role.Name, &role.Description, &role.CreatedAt, &role.UpdatedAt)
 
 	if err == sql.ErrNoRows {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Role not found",
-		})
+		utils.ErrorResponse(w, http.StatusBadRequest, "role not found")
 		return
 	}
 
 	if err != nil {
 		log.Printf("Database error: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":  strconv.Itoa(http.StatusAccepted),
-		"message": "role details",
-		"data":    role,
-	})
+	utils.SuccessResponse(w, http.StatusOK, "user information detail", role)
 }

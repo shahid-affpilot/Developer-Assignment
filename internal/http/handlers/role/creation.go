@@ -4,27 +4,23 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func CreateRole(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	var req models.CreateRoleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	// Validate request
 	if req.Name == "" || len(req.Name) < 2 || len(req.Name) > 50 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Name must be between 2 and 50 characters",
-		})
+		utils.ErrorResponse(w, http.StatusBadRequest, "role name must be in between 3-50 char")
 		return
 	}
 
@@ -33,16 +29,13 @@ func CreateRole(w http.ResponseWriter, r *http.Request) {
 	err := database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM roles WHERE name = $1)", req.Name).Scan(&exists)
 	if err != nil {
 		log.Printf("Database error checking role existence: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error (db)")
 		return
 	}
 
 	if exists {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Role with this name already exists",
-		})
+		utils.ErrorResponse(w, http.StatusConflict, "role (name) already exists")
 		return
 	}
 
@@ -58,15 +51,9 @@ func CreateRole(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Error creating role: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":  strconv.Itoa(http.StatusCreated),
-		"message": "role creation susscessful",
-		"data":    role,
-	})
+	utils.SuccessResponse(w, http.StatusCreated, "role creation success", role)
 }

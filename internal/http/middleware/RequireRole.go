@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"net/http"
+
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func RequireRole(allowedRoles ...string) func(http.Handler) http.Handler {
@@ -11,6 +13,7 @@ func RequireRole(allowedRoles ...string) func(http.Handler) http.Handler {
 
 			if !ok {
 				http.Error(w, "Unauthorized - No role found", http.StatusUnauthorized)
+				utils.ErrorResponse(w, http.StatusUnauthorized, "Unathorized - Ro role found")
 				return
 			}
 
@@ -21,7 +24,7 @@ func RequireRole(allowedRoles ...string) func(http.Handler) http.Handler {
 				}
 			}
 
-			http.Error(w, "Forbidden - Insufficient permissions", http.StatusForbidden)
+			utils.ErrorResponse(w, http.StatusUnauthorized, "Permission denied")
 		})
 	}
 }

@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 func UserUpdate(w http.ResponseWriter, r *http.Request) {
@@ -18,13 +18,13 @@ func UserUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userIdFromParam, err := uuid.Parse(vars["user_id"])
 	if err != nil {
-		http.Error(w, "Invalid User ID", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid user id")
 		return
 	}
 
 	var update_info models.User
 	if err := json.NewDecoder(r.Body).Decode(&update_info); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
@@ -33,36 +33,24 @@ func UserUpdate(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Database error checking user existence: %v", err)
-		http.Error(w, "Internal server error1", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
 	if !exists {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusNotFound),
-			"message": "User not found",
-		})
+		utils.ErrorResponse(w, http.StatusNotFound, "user not found")
 		return
 	}
 
-	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)", update_info.Username).Scan(&exists)
-	// TODO username keep same as before
+	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 AND id != $2)", update_info.Username, userIdFromParam).Scan(&exists)
 
 	if err != nil {
-		log.Printf("Database error checking username existence: %v", err)
-		http.Error(w, "Internal server error2", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if exists {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  strconv.Itoa(http.StatusForbidden),
-			"message": "Username already exists",
-		})
+		utils.ErrorResponse(w, http.StatusConflict, "username already exists")
 		return
 	}
 
@@ -88,14 +76,9 @@ func UserUpdate(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Error updating user detail: %v", err)
-		http.Error(w, "Internal server error3", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":  strconv.Itoa(http.StatusAccepted),
-		"message": "user detail updated",
-		"data":    user,
-	})
+	utils.SuccessResponse(w, http.StatusOK, "User updated", user)
 }

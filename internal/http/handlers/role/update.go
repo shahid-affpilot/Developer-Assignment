@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 type UpdateRoleRequest struct {
@@ -22,24 +22,20 @@ func UpdateRole(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	roleID, err := uuid.Parse(vars["role_id"])
 	if err != nil {
-		http.Error(w, "Invalid role ID", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid role id")
 		return
 	}
 
 	// Parse request body
 	var req UpdateRoleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	// Validate request
 	if req.Name == "" || len(req.Name) < 2 || len(req.Name) > 50 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Name must be between 2 and 50 characters",
-		})
+		utils.ErrorResponse(w, http.StatusBadRequest, "Name must be between 2 and 50 characters")
 		return
 	}
 
@@ -48,16 +44,12 @@ func UpdateRole(w http.ResponseWriter, r *http.Request) {
 	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM roles WHERE id = $1)", roleID).Scan(&exists)
 	if err != nil {
 		log.Printf("Database error checking role existence: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if !exists {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Role not found",
-		})
+		utils.ErrorResponse(w, http.StatusNoContent, "no role with this id")
 		return
 	}
 
@@ -68,16 +60,12 @@ func UpdateRole(w http.ResponseWriter, r *http.Request) {
 	).Scan(&exists)
 	if err != nil {
 		log.Printf("Database error checking name existence: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error (db)")
 		return
 	}
 
 	if exists {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Role with this name already exists",
-		})
+		utils.ErrorResponse(w, http.StatusConflict, "role with this name already exists")
 		return
 	}
 
@@ -103,15 +91,9 @@ func UpdateRole(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Error updating role: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":  strconv.Itoa(http.StatusAccepted),
-		"message": "role update successful",
-		"data":    updatedRole,
-	})
+	utils.SuccessResponse(w, http.StatusOK, "Role updated successfully", updatedRole)
 }

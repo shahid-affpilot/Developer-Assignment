@@ -1,19 +1,19 @@
 package handlers
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
-	"strconv"
-	"strings"
+	"os"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/database"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/models"
 	email "github.com/shahid-affpilot/affpilot-auth-service/internal/services"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,148 +24,111 @@ func InitiatePasswordReset(w http.ResponseWriter, r *http.Request) {
 
 	var req models.InitiateResetRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Invalid request format",
-		})
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	// Generate reset token with encoded password
-	randomToken := uuid.New().String()
-	encodedPass := base64.URLEncoding.EncodeToString([]byte(req.NewPassword))
-	token := randomToken + "." + encodedPass
-	expiry := time.Now().Add(15 * time.Minute)
-	fmt.Println(token)
+	cnf := config.GetConfig()
+	ttl := time.Duration(cnf.Email.VerificationTTL) * time.Minute
+	now := time.Now()
 
-	// Update user with reset token
-	result, err := database.DB.Exec(`
-        UPDATE users 
-        SET verification_token = $1, token_expiry = $2 
-        WHERE email = $3`,
-		randomToken, expiry, req.Email)
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Error generating reset token",
-		})
-		return
+	claims := jwt.MapClaims{
+		"email":   req.Email,
+		"created": now.Unix(),
+		"expiry":  now.Add(ttl).Unix(),
 	}
 
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected == 0 {
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "No account exists with this email",
-		})
-		return
-	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signedToken, _ := token.SignedString([]byte(cnf.JWT.Secret))
 
-	verificationURL := fmt.Sprintf("%s/password-reset?token=%s", Cnf.Email.VerificationURL, token)
+	verificationURL := fmt.Sprintf("%s/password-reset?token=%s", Cnf.Email.VerificationURL, signedToken)
 	mailText := fmt.Sprintf(
-		"Hello dear, here's your new email verification link as requested:\n\n%s\n\nThank you,\nAffpilot AI Team",
+		"Hello dear,\n Change your password through this url. you can just click the link to go directly:\n\n%s\n\nThank you,\nAffpilot AI Team",
 		verificationURL,
 	)
 
-	err = email.SendVerificationEmail(req.Email, "Reset your Affpilot Password", mailText)
+	err := email.SendVerificationEmail(req.Email, "Reset your Affpilot Password", mailText)
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Error sending reset email",
-		})
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to send mail")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
-		"status":  strconv.Itoa(http.StatusOK),
-		"message": "Password reset verification email sent",
-	})
+	utils.SuccessResponse(w, http.StatusAccepted, "password reset email has been sent", nil)
 }
 
 func ConfirmPasswordReset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
-	fullToken := r.URL.Query().Get("token")
-	if fullToken == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Reset token is required",
-		})
+	var req models.Password
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	parts := strings.Split(fullToken, ".")
-	if len(parts) != 2 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Invalid token format",
-		})
+	tokenStr := r.URL.Query().Get("token")
+	if tokenStr == "" {
+		utils.ErrorResponse(w, http.StatusBadRequest, "token is required")
 		return
 	}
-
-	token, encodedPass := parts[0], parts[1]
-
-	// Verify token and get user
-	var email string
-	err := database.DB.QueryRow(`
-        SELECT email 
-        FROM users 
-        WHERE verification_token = $1 
-        AND token_expiry > NOW()`,
-		token).Scan(&email)
-
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Invalid or expired reset token",
-		})
-		return
-	}
-
-	// Decode and hash new password
-	newPassword, err := base64.URLEncoding.DecodeString(encodedPass)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Invalid token",
-		})
-		return
-	}
-	fmt.Print(newPassword)
 
 	cnf := config.GetConfig()
-	salt_pass := []byte(cnf.PassSalt.Pass)
-	pass := append(newPassword, salt_pass...)
+	secret := cnf.JWT.Secret
 
-	hashedPassword, err := bcrypt.GenerateFromPassword(pass, bcrypt.DefaultCost)
+	parsedToken, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(secret), nil
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}))
+
+	if err != nil || !parsedToken.Valid {
+		log.Printf("Invalid token: %v", err)
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid token")
+		return
+	}
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok {
+		utils.ErrorResponse(w, http.StatusBadRequest, "invalid token claims")
+		return
+	}
+
+	email, _ := claims["email"].(string)
+	expiryFloat, _ := claims["expiry"].(float64)
+	expiry := int64(expiryFloat)
+
+	if time.Now().Unix() > expiry {
+		utils.ErrorResponse(w, http.StatusRequestTimeout, "token has been expired")
+		return
+	}
+
+	var exists bool
+	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email=$1)", email).Scan(&exists)
+
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Error processing password",
-		})
+		utils.ErrorResponse(w, http.StatusUnauthorized, "Email is not registered")
+		return
+	}
+	salt := os.Getenv("PASSWORD_SALT")
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password+salt), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("Error hashing password: %v", err)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
 	_, err = database.DB.Exec(`
-        UPDATE users 
-        SET password_hash = $1, verification_token = NULL, token_expiry = NULL 
-        WHERE email = $2`,
-		string(hashedPassword), email)
+		UPDATE users
+		SET password_hash = $1
+		WHERE email =$2
+	`, hashedPassword, email)
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Error updating password",
-		})
+		log.Printf("Error updating password: %v", err)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "internal server error (db)")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
-		"status":  strconv.Itoa(http.StatusOK),
-		"message": "Password has been reset successfully",
-	})
+	utils.SuccessResponse(w, http.StatusAccepted, "password reset successful", nil)
 }

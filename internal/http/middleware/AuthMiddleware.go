@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/shahid-affpilot/affpilot-auth-service/internal/config"
+	"github.com/shahid-affpilot/affpilot-auth-service/internal/utils"
 )
 
 type contextKey string
@@ -20,6 +21,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		cookie, err := r.Cookie("auth_token")
 		if err != nil || cookie.Value == "" {
 			http.Error(w, "Unauthorized - No token", http.StatusUnauthorized)
+			utils.ErrorResponse(w, http.StatusUnauthorized, "Unathorized - No token")
 			return
 		}
 
@@ -30,7 +32,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		})
 
 		if err != nil || !token.Valid {
-			http.Error(w, "Unauthorized - Invalid token", http.StatusUnauthorized)
+			utils.ErrorResponse(w, http.StatusUnauthorized, "invalid token")
 			return
 		}
 
